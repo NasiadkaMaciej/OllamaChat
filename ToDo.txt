@@ -1,0 +1,5 @@
+Save history 
+Chats, not singular responses 
+Choose model from list 
+Control parameters 
+Styling
