@@ -5,22 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ollama Chat</title>
-	<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <h1>Ollama Chat</h1>
-    <div class="form-container">
-		<h2>Prompt:</h2>
-        <textarea id="prompt" placeholder="Type something here..."></textarea><br>
-        <button onclick="sendPrompt()">Send</button>
+    <div class="chat-container">
+        <div class="output-container" id="output"></div>
+        <div class="input-container">
+            <textarea id="prompt" placeholder="Type something here..."></textarea>
+            <button onclick="sendMessage()">Send</button>
+        </div>
     </div>
 
-    <h2>Output:</h2>
-    <div class="output-container" id="output"></div>
-
-	<script src="/socket.io/socket.io.js"></script>
-	<script src="app.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
 </body>
 
 </html>

@@ -1,5 +1,7 @@
 Save history 
-Chats, not singular responses 
 Choose model from list 
 Control parameters 
 Styling
+Accounts? 
+curl http://localhost:11434/api/ps - get model names and size 
+KeepAlive from user? 

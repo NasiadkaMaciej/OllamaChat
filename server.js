@@ -8,19 +8,27 @@ const server = http.createServer(app);
 const io = socketIo(server);
 app.set("trust proxy", true);
 
+const sessions = {}; // Store user sessions
 
 io.on('connection', (socket) => {
-	console.log('User connected');
+	console.log('User connected', socket.id);
+
+	// Initialize session for the user
+	sessions[socket.id] = [];
 
 	// Handle the prompt from the frontend
-	socket.on('sendPrompt', async (prompt) => {
-		console.log('Received prompt:', prompt);
+	socket.on('sendMessage', async (message) => {
+		console.log('Received message:', message);
 
-		// Call Ollama API to generate the response stream
+		// Add user message to session
+		sessions[socket.id].push({ role: 'user', content: message });
+
+		// Call Ollama API to generate the chat response
 		try {
-			const response = await axios.post('http://127.0.0.1:11434/api/generate', {
-				model: 'dolphin-mixtral',
-				prompt: prompt
+			const response = await axios.post('http://127.0.0.1:11434/api/chat', {
+				// model: 'dolphin-mixtral',
+				model: 'qwen2.5-coder:32b-instruct-q8_0',
+				messages: sessions[socket.id]
 			}, {
 				headers: { 'Content-Type': 'application/json' },
 				responseType: 'stream'
@@ -33,9 +41,12 @@ io.on('connection', (socket) => {
 					if (line.trim()) {
 						try {
 							const json = JSON.parse(line);
-							if (json.response){
-								console.log('Sent response:', json.response)
-								socket.emit('receiveWord', json.response); // Send the word to the frontend
+							if (json.message && json.message.content) {
+								console.log('Sent response:', json.message.content)
+								socket.emit('receiveMessage', json.message.content ); // Send the word to the frontend
+								if (!sessions[socket.id])
+									sessions[socket.id] = [];
+								sessions[socket.id].push(json.message); // Store assistant response
 							}
 						} catch (error) {
 							console.error('Error parsing JSON:', error);
@@ -56,7 +67,8 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('disconnect', () => {
-		console.log('User disconnected');
+		console.log('User disconnected', socket.id);
+		delete sessions[socket.id]; // Clean up session
 	});
 });
 
