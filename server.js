@@ -15,6 +15,7 @@ io.on('connection', (socket) => {
 
 	// Initialize session for the user
 	sessions[socket.id] = [];
+	let response;
 
 	// Handle the prompt from the frontend
 	socket.on('sendMessage', async (message) => {
@@ -25,8 +26,7 @@ io.on('connection', (socket) => {
 
 		// Call Ollama API to generate the chat response
 		try {
-			const response = await axios.post('http://127.0.0.1:11434/api/chat', {
-				// model: 'dolphin-mixtral',
+			response = await axios.post('http://127.0.0.1:11434/api/chat', {
 				model: 'qwen2.5-coder:32b-instruct-q8_0',
 				messages: sessions[socket.id]
 			}, {
@@ -70,6 +70,12 @@ io.on('connection', (socket) => {
 		console.log('User disconnected', socket.id);
 		delete sessions[socket.id]; // Clean up session
 	});
+
+	socket.on('stopResponse', () => {
+		if (response) response.data.destroy(); // Close the stream
+		socket.emit('done');
+	});
+
 });
 
 // Start the server

@@ -74,3 +74,15 @@ socket.on('done', () => {
 socket.on('error', (errorMessage) => {
 	outputContainer.textContent = `Error: ${errorMessage}`;
 });
+
+// Listen for the Enter key press to send the message
+promptInput.addEventListener('keydown', (event) => {
+	if (event.key === 'Enter' && !event.shiftKey) {
+		event.preventDefault(); // Prevent newline in the input)
+		sendMessage();
+	}
+});
+
+function stopResponse() {
+	socket.emit('stopResponse');
+}

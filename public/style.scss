@@ -1,8 +1,17 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
 body {
 	font-family: Arial, sans-serif;
-	margin: 2rem;
 	background-color: #f0f0f0;
 	color: #333;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
 }
 
 .chat-container {
@@ -11,28 +20,34 @@ body {
 	height: 80vh;
 	border: 1px solid #ddd;
 	background-color: #fff;
+	width: 80vw;
+	border-radius: 10px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 	.output-container {
 		flex: 1;
 		padding: 1rem;
 		overflow-y: auto;
 		border-bottom: 1px solid #ddd;
+		display: flex;
+		flex-direction: column;
+		gap: 0;
 
 		.message {
 			margin: 0.5rem 0;
 			padding: 0.5rem;
-			border-radius: 4px;
+			border-radius: 5px;
+			white-space: pre-line;
 
 			&.user {
 				background-color: #e0f7fa;
-				text-align: right;
+				align-self: end;
 			}
 
 			&.ai {
 				background-color: #f0f0f0;
-				text-align: left;
+				align-self: baseline;
 			}
-
 		}
 	}
 }
@@ -40,23 +55,44 @@ body {
 .input-container {
 	display: flex;
 	padding: 1rem;
+	border-radius: 10px;
 
 	textarea {
 		flex: 1;
 		font-size: 1rem;
 		padding: 0.5rem;
 		resize: none;
+		border-radius: 10px;
+		border: 2px dashed #ccc;
+		overflow: auto;
+		outline: none;
+		transition: all 0.2s ease;
+
+		&:focus {
+			border: 2px dashed #4caf50;
+		}
 	}
 
 	button {
-		background-color: #4CAF50;
+		background-color: #4caf50;
 		color: white;
 		border: none;
 		cursor: pointer;
 		margin-left: 0.5rem;
+		padding: 10px;
+		border-radius: 10px;
+		text-transform: uppercase;
+		transition: all 0.3s ease-in-out;
 
 		&:hover {
-			background-color: #45a049;
+			background-color: darken(#4caf50, 5%);
+			transform: translateY(-2px);
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+		}
+
+		&:active {
+			background-color: darken(#4caf50, 10%);
+			transform: translateY(2px);
 		}
 	}
 }

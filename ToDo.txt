@@ -5,3 +5,4 @@ Styling
 Accounts? 
 curl http://localhost:11434/api/ps - get model names and size 
 KeepAlive from user? 
+https://github.com/open-webui/open-webui?tab=readme-ov-file
