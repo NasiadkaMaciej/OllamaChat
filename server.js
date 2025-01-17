@@ -78,19 +78,31 @@ io.on('connection', (socket) => {
 		}
 	});
 
-	socket.on('stopResponse', (sessionId) => {
-		const response = activeResponses[sessionId];
-		if (response) {
-			response.data.destroy();
+
+	function delActiveResponses(sessionId) {
+		if (activeResponses[sessionId]) {
+			activeResponses[sessionId].data.destroy();
 			delete activeResponses[sessionId];
+		}
+	}
+
+	socket.on('disconnect', () => {
+		if (socket.userId) {
+			Object.keys(users[socket.userId].sessions).forEach((sessionId) => {
+				delActiveResponses(sessionId);
+			});
 		}
 	});
 
-	// ToDo: settion deletion
-	socket.on('disconnect', () => {
-		console.log('User disconnected', socket.id);
+	socket.on('stopResponse', (sessionId) => {
+		delActiveResponses(sessionId);
 	});
 
+	socket.on('deleteSession', (sessionId) => {
+		delete users[socket.userId].sessions[sessionId];
+		socket.emit('loadSessions', Object.keys(users[socket.userId].sessions));
+		delActiveResponses(sessionId);
+	});
 });
 
 // Start the server

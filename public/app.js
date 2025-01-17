@@ -126,8 +126,36 @@ function startSession(callback) {
 
 function addSessionToUI(sessionId) {
 	const sessionElement = document.createElement('div');
-	sessionElement.textContent = sessionId;
 	sessionElement.classList.add('session-item');
+
+	const sessionNameElement = document.createElement('span');
+	sessionNameElement.textContent = sessionId;
+	sessionNameElement.classList.add('session-name');
+	sessionElement.appendChild(sessionNameElement);
+
+	// ToDo: Add option to edit session name
+	const editButton = document.createElement('button');
+	editButton.textContent = 'Edit';
+	editButton.classList.add('edit-button');
+	editButton.addEventListener('click', (event) => {
+		event.stopPropagation();
+	});
+	sessionElement.appendChild(editButton);
+
+	const deleteButton = document.createElement('button');
+	deleteButton.textContent = 'Delete';
+	deleteButton.classList.add('delete-button');
+	deleteButton.addEventListener('click', (event) => {
+		event.stopPropagation();
+		socket.emit('deleteSession', sessionId);
+		if (currentSessionId === sessionId) {
+			stopResponse();
+			outputContainer.innerHTML = '';
+			currentSessionId = null;
+		}
+	});
+	sessionElement.appendChild(deleteButton);
+
 	sessionElement.addEventListener('click', () => loadSession(sessionId));
 	sessionsContainer.appendChild(sessionElement);
 }

@@ -34,16 +34,47 @@ body {
   overflow-y: auto;
 }
 .chat-container .sessions-container .session-item {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+}
+.chat-container .sessions-container .session-item .session-name {
+  flex-basis: 70%;
+  word-break: break-all;
+}
+.chat-container .sessions-container .session-item .edit-button {
+  background-color: #4caf50;
+}
+.chat-container .sessions-container .session-item .edit-button:hover {
+  background-color: #409444;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+.chat-container .sessions-container .session-item .edit-button:active {
+  background-color: #357a38;
+  transform: translateY(2px);
+}
+.chat-container .sessions-container .session-item .delete-button {
+  background-color: #f44336;
+}
+.chat-container .sessions-container .session-item .delete-button:hover {
+  background-color: #f22112;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+.chat-container .sessions-container .session-item .delete-button:active {
+  background-color: #d2190b;
+  transform: translateY(2px);
+}
+.chat-container .sessions-container .session-item button {
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
-}
-.chat-container .sessions-container .session-item:hover {
-  background-color: #d9d9d9;
+  transition: all 0.3s;
+  flex-basis: 10%;
 }
 .chat-container .chat-main {
   display: flex;
@@ -101,13 +132,14 @@ body {
   border-radius: 10px;
   text-transform: uppercase;
   transition: all 0.3s ease-in-out;
+  background-color: #4caf50;
 }
 .chat-container .chat-main .input-container button:hover {
-  background-color: #449d48;
+  background-color: #409444;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 .chat-container .chat-main .input-container button:active {
-  background-color: #3d8b40;
+  background-color: #357a38;
   transform: translateY(2px);
 }/*# sourceMappingURL=style.css.map */

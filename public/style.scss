@@ -1,3 +1,18 @@
+@mixin button-states($bg-color) {
+	background-color: $bg-color;
+
+	&:hover {
+		background-color: darken($bg-color, 7.5%);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	}
+
+	&:active {
+		background-color: darken($bg-color, 15%);
+		transform: translateY(2px);
+	}
+}
+
 * {
 	margin: 0;
 	padding: 0;
@@ -34,16 +49,32 @@ body {
 		overflow-y: auto;
 
 		.session-item {
-			padding: 0.5rem;
-			margin-bottom: 0.5rem;
-			background-color: #ffffff;
-			border: 1px solid #ddd;
-			border-radius: 5px;
-			cursor: pointer;
-			transition: background-color 0.3s;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 5px;
 
-			&:hover {
-				background-color: #d9d9d9;
+			.session-name {
+				flex-basis: 70%;
+				word-break: break-all;
+			}
+
+			.edit-button {
+				@include button-states(#4caf50);
+			}
+
+			.delete-button {
+				@include button-states(#f44336);
+			}
+
+			button {
+				color: white;
+				border: none;
+				padding: 0.25rem 0.5rem;
+				border-radius: 5px;
+				cursor: pointer;
+				transition: all 0.3s;
+				flex-basis: 10%;
 			}
 		}
 	}
@@ -110,17 +141,7 @@ body {
 				border-radius: 10px;
 				text-transform: uppercase;
 				transition: all 0.3s ease-in-out;
-
-				&:hover {
-					background-color: darken(#4caf50, 5%);
-					transform: translateY(-2px);
-					box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-				}
-
-				&:active {
-					background-color: darken(#4caf50, 10%);
-					transform: translateY(2px);
-				}
+				@include button-states(#4caf50);
 			}
 		}
 	}
