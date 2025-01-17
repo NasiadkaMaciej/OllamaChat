@@ -2,38 +2,55 @@ const express = require('express');
 const socketIo = require('socket.io');
 const axios = require('axios');
 const http = require('http');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 app.set("trust proxy", true);
 
-const sessions = {}; // Store user sessions
+const users = {}; // Store users and sessions
+const activeResponses = {}; // Store responses for stopping later
 
 io.on('connection', (socket) => {
-	console.log('User connected', socket.id);
+	// ToDo: Implement user registration
+	// Create user and load sessions
+	socket.on('registerUser', (userId) => {
+		if (!users[userId]) users[userId] = { sessions: {} };
+		socket.userId = userId;
+		socket.emit('loadSessions', Object.keys(users[userId].sessions));
+	});
 
-	// Initialize session for the user
-	sessions[socket.id] = [];
-	let response;
+	// Create session
+	socket.on('startSession', () => {
+		const sessionId = `session_${uuidv4()}`;
+		users[socket.userId].sessions[sessionId] = [];
+		socket.emit('sessionStarted', sessionId);
+	});
 
-	// Handle the prompt from the frontend
-	socket.on('sendMessage', async (message) => {
+	// Load messages
+	socket.on('loadSession', (sessionId) => {
+		const sessionData = users[socket.userId].sessions[sessionId] || [];
+		socket.emit('loadMessages', sessionData);
+	});
+
+	socket.on('sendMessage', async (message, sessionId) => {
 		console.log('Received message:', message);
 
 		// Add user message to session
-		sessions[socket.id].push({ role: 'user', content: message });
+		const session = users[socket.userId].sessions[sessionId];
+		session.push({ role: 'user', content: message });
 
-		// Call Ollama API to generate the chat response
-		try {
-			response = await axios.post('http://127.0.0.1:11434/api/chat', {
+		try { // Call Ollama API to generate the chat response
+			const response = await axios.post('http://127.0.0.1:11434/api/chat', {
 				model: 'qwen2.5-coder:32b-instruct-q8_0',
-				messages: sessions[socket.id]
+				messages: session
 			}, {
 				headers: { 'Content-Type': 'application/json' },
 				responseType: 'stream'
 			});
 
+			activeResponses[sessionId] = response;
 			// Process the stream and send each word to the frontend
 			response.data.on('data', (chunk) => {
 				const lines = chunk.toString().split('\n'); // Split chunk by new lines
@@ -41,13 +58,9 @@ io.on('connection', (socket) => {
 					if (line.trim()) {
 						try {
 							const json = JSON.parse(line);
-							if (json.message && json.message.content) {
-								console.log('Sent response:', json.message.content)
-								socket.emit('receiveMessage', json.message.content ); // Send the word to the frontend
-								if (!sessions[socket.id])
-									sessions[socket.id] = [];
-								sessions[socket.id].push(json.message); // Store assistant response
-							}
+							console.log('Sent response:', json.message.content);
+							socket.emit('receiveMessage', json.message.content, json.done, sessionId);
+							session.push({ role: 'ai', content: json.message.content, done: json.done });
 						} catch (error) {
 							console.error('Error parsing JSON:', error);
 						}
@@ -57,23 +70,25 @@ io.on('connection', (socket) => {
 
 			// Handle end of stream
 			response.data.on('end', () => {
-				socket.emit('done'); // Notify that the stream is complete
+				delete activeResponses[sessionId];
 			});
 
 		} catch (error) {
 			console.error('Error during API call:', error);
-			socket.emit('error', 'Error generating response');
 		}
 	});
 
-	socket.on('disconnect', () => {
-		console.log('User disconnected', socket.id);
-		delete sessions[socket.id]; // Clean up session
+	socket.on('stopResponse', (sessionId) => {
+		const response = activeResponses[sessionId];
+		if (response) {
+			response.data.destroy();
+			delete activeResponses[sessionId];
+		}
 	});
 
-	socket.on('stopResponse', () => {
-		if (response) response.data.destroy(); // Close the stream
-		socket.emit('done');
+	// ToDo: settion deletion
+	socket.on('disconnect', () => {
+		console.log('User disconnected', socket.id);
 	});
 
 });

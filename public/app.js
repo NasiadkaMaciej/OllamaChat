@@ -2,87 +2,150 @@ const socket = io();
 
 const promptInput = document.getElementById('prompt');
 const outputContainer = document.getElementById('output');
+const sessionsContainer = document.getElementById('sessions');
 
 // Queue to hold words to be typed
 let wordQueue = [];
 let isTyping = false;
-
 let currentMessageElement = null;
+let currentSessionId = null;
+let responseInProgress = false;
+
+// Get userId
+function registerUser() {
+	// ToDo: Implement user registration
+	let userId = localStorage.getItem('userId');
+	if (!userId) {
+		userId = `user_${Date.now()}`;
+		localStorage.setItem('userId', userId);
+	}
+	// Create user and load sessions
+	socket.emit('registerUser', userId);
+}
+
 
 function sendMessage() {
+	if (responseInProgress) return;
+
 	const message = promptInput.value.trim();
 	if (message) {
-		socket.emit('sendMessage', message);
-		appendMessage('user', message);
-		promptInput.value = '';
+		if (!currentSessionId)
+			startSession(() => sendUserMessage(message));
+		else sendUserMessage(message);
 	}
 }
 
-function appendMessage(role, message) {
-	if (role === 'ai') {
-		// Add the word to the queue
+function sendUserMessage(message) {
+	responseInProgress = true;
+	socket.emit('sendMessage', message, currentSessionId);
+	appendMessage('user', message);
+	promptInput.value = '';
+}
+
+function appendMessage(role, message, done = false, animate = false) {
+	if (done && role === 'ai') { // If done, create new bubble
+		currentMessageElement = null;
+		responseInProgress = false;
+		return;
+	}
+
+	// If no message element exists, or the role has changed, create a new message element
+	if (!currentMessageElement || !currentMessageElement.classList.contains(role)) {
+		currentMessageElement = document.createElement('div');
+		currentMessageElement.classList.add('message', role);
+		outputContainer.appendChild(currentMessageElement);
+	}
+
+	if (animate) {
 		wordQueue.push(message);
-		// If not currently typing, start typing the next word in the queue
 		if (!isTyping) {
 			isTyping = true;
-			typeNextWord(); // Start typing the words from the queue
-
+			typeNextWord();
 		}
-	} else if (role === 'user') {
-		const messageElement = document.createElement('div');
-		messageElement.classList.add('message', role);
-		messageElement.textContent = message;
-		outputContainer.appendChild(messageElement);
-	}
+	} else currentMessageElement.textContent += message;
 	outputContainer.scrollTop = outputContainer.scrollHeight;
 }
 
 // Function to type a word from the queue
 async function typeNextWord() {
-	// While there are words in the queue, type them one by one
 	while (wordQueue.length > 0) {
-		const word = wordQueue.shift(); // Get the next word from the queue
-		let currentText = currentMessageElement ? currentMessageElement.textContent : ''; // Start with the existing text
-
-		for (let char of word) {
-			currentText += char; // Append the character to the current text
-			if (!currentMessageElement) {
-				currentMessageElement = document.createElement('div');
-				currentMessageElement.classList.add('message', 'ai');
-				outputContainer.appendChild(currentMessageElement);
-			}
-			currentMessageElement.textContent = currentText; // Update the text content
+		const word = wordQueue.shift();
+		for (const char of word) {
+			if (!currentMessageElement) return;
+			currentMessageElement.textContent += char;
+			// ToDo: Calculate incoming word speed and adjust timeout
 			await new Promise(resolve => setTimeout(resolve, 40));
 		}
 	}
-	// Mark typing as finished
 	isTyping = false;
 }
 
-// Listen for words from the backend and add them to the queue
-socket.on('receiveMessage', (message) => {
-	appendMessage('ai', message);
+// Append message from current session
+socket.on('receiveMessage', (message, done, sessionId) => {
+	if (sessionId !== currentSessionId) return;
+	appendMessage('ai', message, done, true);
 });
 
-// Handle stream completion
-socket.on('done', () => {
-	promptInput.value = '';
+socket.on('loadSessions', (sessions) => {
+	sessionsContainer.innerHTML = '';
+	sessions.forEach(addSessionToUI);
+});
+
+// Load messages from session
+socket.on('loadMessages', (messages) => {
+	outputContainer.innerHTML = '';
+	messages.forEach(msg => appendMessage(msg.role, msg.content));
+	isTyping = false;
 	currentMessageElement = null;
 });
 
-// Handle errors
-socket.on('error', (errorMessage) => {
-	outputContainer.textContent = `Error: ${errorMessage}`;
+// Get session id and load
+socket.on('sessionStarted', (sessionId) => {
+	currentSessionId = sessionId;
+	addSessionToUI(sessionId);
 });
 
-// Listen for the Enter key press to send the message
 promptInput.addEventListener('keydown', (event) => {
 	if (event.key === 'Enter' && !event.shiftKey) {
-		event.preventDefault(); // Prevent newline in the input)
+		event.preventDefault();
 		sendMessage();
 	}
 });
 
-function stopResponse() {
-	socket.emit('stopResponse');
+function startSession(callback) {
+	stopResponse();
+	currentSessionId = null;
+	outputContainer.innerHTML = '';
+	isTyping = false;
+	socket.emit('startSession');
+	socket.once('sessionStarted', (sessionId) => {
+		currentSessionId = sessionId;
+		callback();
+	});
 }
+
+function addSessionToUI(sessionId) {
+	const sessionElement = document.createElement('div');
+	sessionElement.textContent = sessionId;
+	sessionElement.classList.add('session-item');
+	sessionElement.addEventListener('click', () => loadSession(sessionId));
+	sessionsContainer.appendChild(sessionElement);
+}
+
+function loadSession(sessionId) {
+	// ToDo: When swtiching sessions, do not stop generating, just don't send it
+	// ToDo: When connected to old session, listen to word stream
+	stopResponse();
+	currentSessionId = sessionId;
+	socket.emit('loadSession', sessionId);
+}
+
+function stopResponse() {
+	socket.emit('stopResponse', currentSessionId);
+	isTyping = false;
+	responseInProgress = false;
+	wordQueue = [];
+	currentMessageElement = null;
+}
+
+registerUser();

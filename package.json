@@ -3,6 +3,7 @@
     "axios": "^1.7.9",
     "express": "^4.21.2",
     "http": "^0.0.1-security",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "uuidv4": "^6.2.13"
   }
 }
