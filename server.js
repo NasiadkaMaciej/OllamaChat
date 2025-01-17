@@ -78,6 +78,24 @@ io.on('connection', (socket) => {
 		}
 	});
 
+	socket.on('search', (query) => {
+		const userId = socket.userId;
+		const matchingSessions = {};
+	
+		// Filter sessions containing the query
+		for (const sessionId in users[userId].sessions) {
+			const messages = users[userId].sessions[sessionId];
+			const matchedMessages = messages.filter(message =>
+				message.content.includes(query)
+			);
+	
+			if (matchedMessages.length > 0)
+				matchingSessions[sessionId] = matchedMessages;
+		}
+	
+		socket.emit('loadSessions', Object.keys(matchingSessions));
+	});
+
 
 	function delActiveResponses(sessionId) {
 		if (activeResponses[sessionId]) {

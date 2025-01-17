@@ -33,10 +33,20 @@ body {
   padding: 1rem;
   overflow-y: auto;
 }
+.chat-container .sessions-container .search-container {
+  display: flex;
+}
+.chat-container .sessions-container .search-container input {
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 2px solid #ccc;
+  width: 100%;
+}
 .chat-container .sessions-container .session-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.1rem;
   gap: 5px;
 }
 .chat-container .sessions-container .session-item .session-name {

@@ -176,4 +176,11 @@ function stopResponse() {
 	currentMessageElement = null;
 }
 
+function searchMessages() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (query) socket.emit('search', query);
+	// It checks if user exists and returns sessions
+    else socket.emit('registerUser', localStorage.getItem('userId'));
+}
+
 registerUser();

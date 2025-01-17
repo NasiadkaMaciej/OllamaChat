@@ -48,10 +48,22 @@ body {
 		padding: 1rem;
 		overflow-y: auto;
 
+		.search-container {
+			display: flex;
+		
+			input {
+				padding: 0.5rem;
+				border-radius: 10px;
+				border: 2px solid #ccc;
+				width: 100%;
+			}
+		}
+		
 		.session-item {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			padding: 0.1rem;
 			gap: 5px;
 
 			.session-name {
