@@ -53,7 +53,10 @@ io.on('connection', (socket) => {
 			return;
 		}
 		if (!users[username]) users[username] = { sessions: {} };
-		socket.emit('loadSessions', Object.keys(users[username].sessions));
+		socket.emit('loadSessions', Object.entries(users[username].sessions).map(([id, data]) => ({
+			id,
+			name: data.name
+		})));
 	});
 
 	// Create session
@@ -65,7 +68,7 @@ io.on('connection', (socket) => {
 		}
 		if (!users[username]) users[username] = { sessions: {} };
 		const sessionId = `session_${uuidv4()}`;
-		users[username].sessions[sessionId] = [];
+		users[username].sessions[sessionId] = { name: sessionId, messages: [] };
 		socket.emit('sessionStarted', sessionId);
 	});
 
@@ -76,7 +79,7 @@ io.on('connection', (socket) => {
 			socket.emit('loginFail', 'Not logged in.');
 			return;
 		}
-		const sessionData = users[username].sessions[sessionId] || [];
+		const sessionData = users[username].sessions[sessionId]?.messages || [];
 		socket.emit('loadMessages', sessionData);
 	});
 
@@ -89,7 +92,7 @@ io.on('connection', (socket) => {
 			return;
 		}
 		if (!users[username]) users[username] = { sessions: {} };
-		const session = users[username].sessions[sessionId];
+		const session = users[username].sessions[sessionId].messages;
 		session.push({ role: 'user', content: message });
 		try { // Call Ollama API to generate the chat response
 			const response = await axios.post('http://127.0.0.1:11434/api/chat', {
@@ -138,11 +141,16 @@ io.on('connection', (socket) => {
 		const userSessions = users[username]?.sessions || {};
 		// Filter sessions containing the query
 		for (const sid in userSessions) {
-			const matched = userSessions[sid].filter(msg => msg.content.includes(query));
-			if (matched.length > 0) matchingSessions[sid] = matched;
+			const matchedMessages = userSessions[sid].messages.filter(msg => msg.content.includes(query));
+			if (matchedMessages.length > 0) {
+				matchingSessions[sid] = { ...userSessions[sid], messages: matchedMessages };
+			}
 		}
 
-		socket.emit('loadSessions', Object.keys(matchingSessions));
+		socket.emit('loadSessions', Object.entries(matchingSessions).map(([id, data]) => ({
+			id,
+			name: data.name
+		})));
 	});
 
 	function delActiveResponses(sid) {
@@ -173,10 +181,15 @@ io.on('connection', (socket) => {
 		delActiveResponses(sessionId);
 	});
 
-	socket.on('checkSession', () => {
-		if (socket.request.session?.user)
-			socket.emit('sessionActive');
+	socket.on('renameSession', (sessionId, newName) => {
+		const username = socket.request.session.user;
+		if (!username || !users[username]?.sessions[sessionId]) return;
+		users[username].sessions[sessionId].name = newName;
+		socket.emit('loadSessions', Object.entries(users[username].sessions).map(
+			([id, data]) => ({ id, name: data.name })
+		));
 	});
+
 });
 
 // Start the server

@@ -71,7 +71,7 @@ socket.on('receiveMessage', (message, done, sessionId) => {
 
 socket.on('loadSessions', (sessions) => {
 	sessionsContainer.innerHTML = '';
-	sessions.forEach(addSessionToUI);
+	sessions.forEach((s) => addSessionToUI(s.id, s.name));
 });
 
 // Load messages from session
@@ -107,21 +107,22 @@ function startSession(callback) {
 	});
 }
 
-function addSessionToUI(sessionId) {
+function addSessionToUI(sessionId, sessionName = sessionId) {
 	const sessionElement = document.createElement('div');
 	sessionElement.classList.add('session-item');
 
 	const sessionNameElement = document.createElement('span');
-	sessionNameElement.textContent = sessionId;
+	sessionNameElement.textContent = sessionName;
 	sessionNameElement.classList.add('session-name');
 	sessionElement.appendChild(sessionNameElement);
 
-	// ToDo: Add option to edit session name
 	const editButton = document.createElement('button');
 	editButton.textContent = 'Edit';
 	editButton.classList.add('edit-button');
 	editButton.addEventListener('click', (event) => {
 		event.stopPropagation();
+		const newName = prompt('Enter new session name:', sessionName);
+		if (newName) socket.emit('renameSession', sessionId, newName);
 	});
 	sessionElement.appendChild(editButton);
 
