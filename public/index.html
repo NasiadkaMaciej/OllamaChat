@@ -9,7 +9,23 @@
 </head>
 
 <body>
-	<div class="chat-container">
+	<div id="auth-container">
+		<h2>Login</h2>
+		<form id="loginForm">
+			<input type="text" id="username" placeholder="Username" required />
+			<input type="password" id="password" placeholder="Password" required />
+			<button type="submit">Log In</button>
+		</form>
+
+		<h3>Register</h3>
+		<form id="registerForm">
+			<input type="text" id="regUsername" placeholder="New username" required />
+			<input type="password" id="regPassword" placeholder="Password" required />
+			<input type="password" id="regConfirmPassword" placeholder="Confirm password" required />
+			<button type="submit">Register</button>
+		</form>
+	</div>
+	<div id="chat-container">
 		<div class="sessions-container">
 			<div class="search-container">
 				<input type="text" id="searchInput" oninput="searchMessages()" placeholder="Search messages...">

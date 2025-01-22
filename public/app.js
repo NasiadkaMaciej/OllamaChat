@@ -11,28 +11,12 @@ let currentMessageElement = null;
 let currentSessionId = null;
 let responseInProgress = false;
 
-// Get userId
-function registerUser() {
-	// ToDo: Implement user registration
-	let userId = localStorage.getItem('userId');
-	if (!userId) {
-		userId = `user_${Date.now()}`;
-		localStorage.setItem('userId', userId);
-	}
-	// Create user and load sessions
-	socket.emit('registerUser', userId);
-}
-
-
 function sendMessage() {
 	if (responseInProgress) return;
-
 	const message = promptInput.value.trim();
-	if (message) {
-		if (!currentSessionId)
-			startSession(() => sendUserMessage(message));
-		else sendUserMessage(message);
-	}
+	if (!message) return;
+	if (!currentSessionId) startSession(() => sendUserMessage(message));
+	else sendUserMessage(message);
 }
 
 function sendUserMessage(message) {
@@ -55,7 +39,6 @@ function appendMessage(role, message, done = false, animate = false) {
 		currentMessageElement.classList.add('message', role);
 		outputContainer.appendChild(currentMessageElement);
 	}
-
 	if (animate) {
 		wordQueue.push(message);
 		if (!isTyping) {
@@ -177,10 +160,69 @@ function stopResponse() {
 }
 
 function searchMessages() {
-    const query = document.getElementById('searchInput').value.trim();
-    if (query) socket.emit('search', query);
-	// It checks if user exists and returns sessions
-    else socket.emit('registerUser', localStorage.getItem('userId'));
+	const query = document.getElementById('searchInput').value.trim();
+	if (query) socket.emit('search', query);
+	else socket.emit('loadSessions');
 }
 
-registerUser();
+// Auth section
+// ToDo: Other file?
+// ToDo: Add logout button
+// ToDo: Store in DB
+// ToDo: Cookies?
+// ToDo: Sessio restore?
+
+
+const passwordInput = document.getElementById('password');
+const usernameInput = document.getElementById('username');
+const chatContainer = document.getElementById('chat-container');
+const authContainer = document.getElementById('auth-container');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+
+loginForm.addEventListener('submit', (event) => {
+	event.preventDefault();
+	const username = usernameInput.value.trim();
+	const password = passwordInput.value.trim();
+	if (!validateInputs(username, password)) return;
+	socket.emit('login', { username, password });
+});
+
+registerForm.addEventListener('submit', (event) => {
+	event.preventDefault();
+	const username = document.getElementById('regUsername').value.trim();
+	const password = document.getElementById('regPassword').value.trim();
+	const confirmPassword = document.getElementById('regConfirmPassword').value.trim();
+	if (!validateInputs(username, password)) return;
+	if (password !== confirmPassword) {
+		alert("Passwords do not match!");
+		return;
+	}
+	socket.emit('register', { username, password });
+});
+
+socket.on('loginSuccess', () => {
+	authContainer.style.display = 'none';
+	chatContainer.style.display = 'flex';
+	socket.emit('loadSessions');
+});
+
+socket.on('loginFail', (msg) => {
+	alert(msg);
+});
+
+socket.on('registerSuccess', () => {
+	alert("Registration successful! Please login.");
+});
+
+socket.on('registerFail', (msg) => {
+	alert(msg);
+});
+
+function validateInputs(username, password) {
+	if (!username || !password) {
+		alert("Username and password are required.");
+		return false;
+	}
+	return true;
+}

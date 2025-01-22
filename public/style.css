@@ -13,18 +13,29 @@ body {
   justify-content: center;
   height: 100vh;
 }
-
-.chat-container {
-  display: flex;
-  height: 80vh;
-  width: 90vw;
+body > div {
   border: 1px solid #ddd;
   background-color: #fff;
-  border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+button {
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+#chat-container {
+  display: none;
+  height: 80vh;
+  width: 90vw;
   overflow: hidden;
 }
-.chat-container .sessions-container {
+#chat-container .sessions-container {
   width: 25%;
   background-color: #e8e8e8;
   border-right: 1px solid #ddd;
@@ -33,65 +44,63 @@ body {
   padding: 1rem;
   overflow-y: auto;
 }
-.chat-container .sessions-container .search-container {
+#chat-container .sessions-container .search-container {
   display: flex;
 }
-.chat-container .sessions-container .search-container input {
+#chat-container .sessions-container .search-container input {
   padding: 0.5rem;
   border-radius: 10px;
   border: 2px solid #ccc;
   width: 100%;
 }
-.chat-container .sessions-container .session-item {
+#chat-container .sessions-container .session-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.1rem;
   gap: 5px;
 }
-.chat-container .sessions-container .session-item .session-name {
+#chat-container .sessions-container .session-item .session-name {
   flex-basis: 70%;
   word-break: break-all;
 }
-.chat-container .sessions-container .session-item .edit-button {
+#chat-container .sessions-container .session-item .edit-button {
   background-color: #4caf50;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease-in-out;
 }
-.chat-container .sessions-container .session-item .edit-button:hover {
+#chat-container .sessions-container .session-item .edit-button:hover {
   background-color: #409444;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-.chat-container .sessions-container .session-item .edit-button:active {
+#chat-container .sessions-container .session-item .edit-button:active {
   background-color: #357a38;
   transform: translateY(2px);
 }
-.chat-container .sessions-container .session-item .delete-button {
+#chat-container .sessions-container .session-item .delete-button {
   background-color: #f44336;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease-in-out;
 }
-.chat-container .sessions-container .session-item .delete-button:hover {
+#chat-container .sessions-container .session-item .delete-button:hover {
   background-color: #f22112;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-.chat-container .sessions-container .session-item .delete-button:active {
+#chat-container .sessions-container .session-item .delete-button:active {
   background-color: #d2190b;
   transform: translateY(2px);
 }
-.chat-container .sessions-container .session-item button {
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s;
+#chat-container .sessions-container .session-item button {
   flex-basis: 10%;
 }
-.chat-container .chat-main {
+#chat-container .chat-main {
   display: flex;
   flex-direction: column;
   flex: 1;
 }
-.chat-container .chat-main .output-container {
+#chat-container .chat-main .output-container {
   flex: 1;
   padding: 1rem;
   overflow-y: auto;
@@ -100,26 +109,26 @@ body {
   flex-direction: column;
   gap: 0;
 }
-.chat-container .chat-main .output-container .message {
+#chat-container .chat-main .output-container .message {
   margin: 0.5rem 0;
   padding: 0.5rem;
   border-radius: 5px;
   white-space: pre-line;
 }
-.chat-container .chat-main .output-container .message.user {
+#chat-container .chat-main .output-container .message.user {
   background-color: #e0f7fa;
   align-self: end;
 }
-.chat-container .chat-main .output-container .message.ai {
+#chat-container .chat-main .output-container .message.ai {
   background-color: #f0f0f0;
   align-self: baseline;
 }
-.chat-container .chat-main .input-container {
+#chat-container .chat-main .input-container {
   display: flex;
   padding: 1rem;
   background-color: #f9f9f9;
 }
-.chat-container .chat-main .input-container textarea {
+#chat-container .chat-main .input-container textarea {
   flex: 1;
   font-size: 1rem;
   padding: 0.5rem;
@@ -129,27 +138,58 @@ body {
   outline: none;
   transition: all 0.2s ease;
 }
-.chat-container .chat-main .input-container textarea:focus {
+#chat-container .chat-main .input-container textarea:focus {
   border: 2px dashed #4caf50;
 }
-.chat-container .chat-main .input-container button {
+#chat-container .chat-main .input-container button {
+  margin: 0 0.3rem;
   background-color: #4caf50;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin-left: 0.5rem;
-  padding: 10px;
-  border-radius: 10px;
-  text-transform: uppercase;
+  padding: 0.5rem 1rem;
   transition: all 0.3s ease-in-out;
-  background-color: #4caf50;
 }
-.chat-container .chat-main .input-container button:hover {
+#chat-container .chat-main .input-container button:hover {
   background-color: #409444;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-.chat-container .chat-main .input-container button:active {
+#chat-container .chat-main .input-container button:active {
+  background-color: #357a38;
+  transform: translateY(2px);
+}
+
+#auth-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 300px;
+  padding: 1rem;
+}
+#auth-container h2,
+#auth-container h3 {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+#auth-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+#auth-container form input {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+#auth-container form button {
+  background-color: #4caf50;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease-in-out;
+}
+#auth-container form button:hover {
+  background-color: #409444;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+#auth-container form button:active {
   background-color: #357a38;
   transform: translateY(2px);
 }/*# sourceMappingURL=style.css.map */

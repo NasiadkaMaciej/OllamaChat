@@ -1,6 +1,7 @@
 @mixin button-states($bg-color) {
 	background-color: $bg-color;
-
+	padding: 0.5rem 1rem;
+	transition: all 0.3s ease-in-out;
 	&:hover {
 		background-color: darken($bg-color, 7.5%);
 		transform: translateY(-2px);
@@ -27,16 +28,29 @@ body {
 	align-items: center;
 	justify-content: center;
 	height: 100vh;
+
+	> div {
+		border: 1px solid #ddd;
+		background-color: #fff;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		border-radius: 10px;
+
+	}
 }
 
-.chat-container {
-	display: flex;
+button {
+	color: white;
+	border: none;
+	padding: 0.25rem 0.5rem;
+	border-radius: 5px;
+	cursor: pointer;
+	text-transform: uppercase;
+}
+
+#chat-container {
+	display: none;
 	height: 80vh;
 	width: 90vw;
-	border: 1px solid #ddd;
-	background-color: #fff;
-	border-radius: 10px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 	overflow: hidden;
 
 	.sessions-container {
@@ -50,7 +64,7 @@ body {
 
 		.search-container {
 			display: flex;
-		
+
 			input {
 				padding: 0.5rem;
 				border-radius: 10px;
@@ -58,7 +72,7 @@ body {
 				width: 100%;
 			}
 		}
-		
+
 		.session-item {
 			display: flex;
 			justify-content: space-between;
@@ -80,12 +94,6 @@ body {
 			}
 
 			button {
-				color: white;
-				border: none;
-				padding: 0.25rem 0.5rem;
-				border-radius: 5px;
-				cursor: pointer;
-				transition: all 0.3s;
 				flex-basis: 10%;
 			}
 		}
@@ -144,17 +152,39 @@ body {
 			}
 
 			button {
-				background-color: #4caf50;
-				color: white;
-				border: none;
-				cursor: pointer;
-				margin-left: 0.5rem;
-				padding: 10px;
-				border-radius: 10px;
-				text-transform: uppercase;
-				transition: all 0.3s ease-in-out;
+				margin: 0 0.3rem;
 				@include button-states(#4caf50);
 			}
+		}
+	}
+}
+
+#auth-container {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: 300px;
+	padding: 1rem;
+
+	h2,
+	h3 {
+		text-align: center;
+		margin-bottom: 0.5rem;
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+
+		input {
+			padding: 0.5rem;
+			border-radius: 4px;
+			border: 1px solid #ccc;
+		}
+
+		button {
+			@include button-states(#4caf50);
 		}
 	}
 }

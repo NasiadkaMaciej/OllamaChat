@@ -3,47 +3,97 @@ const socketIo = require('socket.io');
 const axios = require('axios');
 const http = require('http');
 const { v4: uuidv4 } = require('uuid');
-
+const session = require('express-session');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+
+const sessionMiddleware = session({
+	secret: 'VerySecretKey',
+	resave: false,
+	saveUninitialized: true
+});
+
+app.use(sessionMiddleware);
+io.use((socket, next) => {
+	sessionMiddleware(socket.request, socket.request.res || {}, next);
+});
 app.set("trust proxy", true);
 
 const users = {}; // Store users and sessions
 const activeResponses = {}; // Store responses for stopping later
+const userCredentials = {};
 
 io.on('connection', (socket) => {
-	// ToDo: Implement user registration
-	// Create user and load sessions
-	socket.on('registerUser', (userId) => {
-		if (!users[userId]) users[userId] = { sessions: {} };
-		socket.userId = userId;
-		socket.emit('loadSessions', Object.keys(users[userId].sessions));
+	socket.on('register', ({ username, password }) => {
+		if (userCredentials[username])
+			socket.emit('registerFail', 'Username already taken.');
+		else {
+			userCredentials[username] = password;
+			socket.emit('registerSuccess');
+		}
+	});
+
+	socket.on('login', ({ username, password }) => {
+		if (!userCredentials[username])
+			socket.emit('loginFail', 'User does not exist.');
+		else if (password && userCredentials[username] !== password) {
+			socket.emit('loginFail', 'Incorrect password.');
+		} else {
+			socket.request.session.user = username;
+			socket.request.session.save();
+			socket.emit('loginSuccess');
+		}
+	});
+
+	socket.on('loadSessions', () => {
+		const username = socket.request.session.user;
+		if (!username) {
+			socket.emit('loginFail', 'Not logged in.');
+			return;
+		}
+		if (!users[username]) users[username] = { sessions: {} };
+		socket.emit('loadSessions', Object.keys(users[username].sessions));
 	});
 
 	// Create session
 	socket.on('startSession', () => {
+		const username = socket.request.session.user;
+		if (!username) {
+			socket.emit('loginFail', 'Not logged in.');
+			return;
+		}
+		if (!users[username]) users[username] = { sessions: {} };
 		const sessionId = `session_${uuidv4()}`;
-		users[socket.userId].sessions[sessionId] = [];
+		users[username].sessions[sessionId] = [];
 		socket.emit('sessionStarted', sessionId);
 	});
 
 	// Load messages
 	socket.on('loadSession', (sessionId) => {
-		const sessionData = users[socket.userId].sessions[sessionId] || [];
+		const username = socket.request.session.user;
+		if (!username) {
+			socket.emit('loginFail', 'Not logged in.');
+			return;
+		}
+		const sessionData = users[username].sessions[sessionId] || [];
 		socket.emit('loadMessages', sessionData);
 	});
 
 	socket.on('sendMessage', async (message, sessionId) => {
 		console.log('Received message:', message);
 
-		// Add user message to session
-		const session = users[socket.userId].sessions[sessionId];
+		const username = socket.request.session.user;
+		if (!username) {
+			socket.emit('loginFail', 'Not logged in.');
+			return;
+		}
+		if (!users[username]) users[username] = { sessions: {} };
+		const session = users[username].sessions[sessionId];
 		session.push({ role: 'user', content: message });
-
 		try { // Call Ollama API to generate the chat response
 			const response = await axios.post('http://127.0.0.1:11434/api/chat', {
-				model: 'qwen2.5-coder:32b-instruct-q8_0',
+				model: 'qwen2.5-coder:32b',
 				messages: session
 			}, {
 				headers: { 'Content-Type': 'application/json' },
@@ -79,36 +129,35 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('search', (query) => {
-		const userId = socket.userId;
-		const matchingSessions = {};
-	
-		// Filter sessions containing the query
-		for (const sessionId in users[userId].sessions) {
-			const messages = users[userId].sessions[sessionId];
-			const matchedMessages = messages.filter(message =>
-				message.content.includes(query)
-			);
-	
-			if (matchedMessages.length > 0)
-				matchingSessions[sessionId] = matchedMessages;
+		const username = socket.request.session.user;
+		if (!username) {
+			socket.emit('loginFail', 'Not logged in.');
+			return;
 		}
-	
+		const matchingSessions = {};
+		const userSessions = users[username]?.sessions || {};
+		// Filter sessions containing the query
+		for (const sid in userSessions) {
+			const matched = userSessions[sid].filter(msg => msg.content.includes(query));
+			if (matched.length > 0) matchingSessions[sid] = matched;
+		}
+
 		socket.emit('loadSessions', Object.keys(matchingSessions));
 	});
 
-
-	function delActiveResponses(sessionId) {
-		if (activeResponses[sessionId]) {
-			activeResponses[sessionId].data.destroy();
-			delete activeResponses[sessionId];
+	function delActiveResponses(sid) {
+		if (activeResponses[sid]) {
+			activeResponses[sid].data.destroy();
+			delete activeResponses[sid];
 		}
 	}
 
 	socket.on('disconnect', () => {
-		if (socket.userId) {
-			Object.keys(users[socket.userId].sessions).forEach((sessionId) => {
-				delActiveResponses(sessionId);
-			});
+		const username = socket.request.session?.user;
+		if (username && users[username]) {
+			for (const sid of Object.keys(users[username].sessions)) {
+				delActiveResponses(sid);
+			}
 		}
 	});
 
@@ -117,13 +166,20 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('deleteSession', (sessionId) => {
-		delete users[socket.userId].sessions[sessionId];
-		socket.emit('loadSessions', Object.keys(users[socket.userId].sessions));
+		const username = socket.request.session.user;
+		if (!username) return;
+		delete users[username].sessions[sessionId];
+		socket.emit('loadSessions', Object.keys(users[username].sessions));
 		delActiveResponses(sessionId);
+	});
+
+	socket.on('checkSession', () => {
+		if (socket.request.session?.user)
+			socket.emit('sessionActive');
 	});
 });
 
 // Start the server
 server.listen(3003, () => {
-	console.log(`Server is running on http://localhost:${3003}`);
+	console.log(`Server is running on http://localhost:3003`);
 });

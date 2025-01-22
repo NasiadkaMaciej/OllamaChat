@@ -14,3 +14,6 @@ New session button in session list
 Highlight active session 
 New session only when message is sent 
 Handle errors?
+Dont scroll to bottom when generating 
+Move code to new files 
+MongoDB 
