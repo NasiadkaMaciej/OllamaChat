@@ -46,7 +46,7 @@ function appendMessage(role, message, done = false, animate = false) {
 			typeNextWord();
 		}
 	} else currentMessageElement.textContent += message;
-	outputContainer.scrollTop = outputContainer.scrollHeight;
+	socket.emit('loadSessions');
 }
 
 // Function to type a word from the queue
@@ -83,9 +83,9 @@ socket.on('loadMessages', (messages) => {
 });
 
 // Get session id and load
-socket.on('sessionStarted', (sessionId) => {
+socket.on('sessionStarted', (sessionId, sessionName) => {
 	currentSessionId = sessionId;
-	addSessionToUI(sessionId);
+	addSessionToUI(sessionId, sessionName);
 });
 
 promptInput.addEventListener('keydown', (event) => {
@@ -107,7 +107,7 @@ function startSession(callback) {
 	});
 }
 
-function addSessionToUI(sessionId, sessionName = sessionId) {
+function addSessionToUI(sessionId, sessionName) {
 	const sessionElement = document.createElement('div');
 	sessionElement.classList.add('session-item');
 
