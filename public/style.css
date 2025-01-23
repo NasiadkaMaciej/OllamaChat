@@ -43,15 +43,23 @@ button {
   flex-direction: column;
   padding: 1rem;
   overflow-y: auto;
+  height: 100%;
 }
 #chat-container .sessions-container .search-container {
   display: flex;
+  margin-bottom: 1rem;
 }
 #chat-container .sessions-container .search-container input {
   padding: 0.5rem;
   border-radius: 10px;
   border: 2px solid #ccc;
   width: 100%;
+}
+#chat-container .sessions-container #sessions {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  scrollbar-width: none;
 }
 #chat-container .sessions-container .session-item {
   display: flex;
@@ -96,7 +104,7 @@ button {
   flex-basis: 10%;
 }
 #chat-container .sessions-container button {
-  margin-top: auto;
+  margin-top: 0;
   background-color: #4caf50;
   padding: 0.5rem 1rem;
   transition: all 0.3s ease-in-out;
