@@ -95,6 +95,21 @@ button {
 #chat-container .sessions-container .session-item button {
   flex-basis: 10%;
 }
+#chat-container .sessions-container button {
+  margin-top: auto;
+  background-color: #4caf50;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease-in-out;
+}
+#chat-container .sessions-container button:hover {
+  background-color: #409444;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+#chat-container .sessions-container button:active {
+  background-color: #357a38;
+  transform: translateY(2px);
+}
 #chat-container .chat-main {
   display: flex;
   flex-direction: column;

@@ -74,6 +74,14 @@ socket.on('loadSessions', (sessions) => {
 	sessions.forEach((s) => addSessionToUI(s.id, s.name));
 });
 
+function clearOutput() {
+	outputContainer.innerHTML = '';
+	isTyping = false;
+	currentMessageElement = null;
+	currentSessionId = null;
+	stopResponse();
+}
+
 // Load messages from session
 socket.on('loadMessages', (messages) => {
 	outputContainer.innerHTML = '';

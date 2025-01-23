@@ -97,6 +97,11 @@ button {
 				flex-basis: 10%;
 			}
 		}
+
+		button {
+			margin-top: auto;
+			@include button-states(#4caf50);
+		}
 	}
 
 	.chat-main {

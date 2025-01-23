@@ -7,7 +7,6 @@ https://github.com/open-webui/open-webui?tab=readme-ov-file
 Sessions in url?
 Messages edit 
 Display if response is generated 
-New session button in session list 
 Highlight active session 
 New session only when message is sent 
 Handle errors?
