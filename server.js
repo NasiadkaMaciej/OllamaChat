@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
 	socket.on('loadSessions', async () => {
 		const userId = socket.request.session.user;
 		if (!checkIfLoggedIn(userId)) return;
-		const sessions = await Session.find({ userId }).sort({ dateModified: -1 });
+		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });
 		socket.emit('loadSessions', sessions.map(s => ({ id: s._id, name: s.name })));
 	});
 
@@ -103,7 +103,6 @@ io.on('connection', (socket) => {
 			return;
 		}
 		session.messages.push({ role: 'user', content: message });
-		session.dateModified = Date.now();
 		await session.save();
 
 		try { // Call Ollama API to generate the chat response
@@ -126,7 +125,6 @@ io.on('connection', (socket) => {
 							console.log('Sent response:', json.message.content);
 							socket.emit('receiveMessage', json.message.content, json.done, sessionId);
 							session.messages.push({ role: 'ai', content: json.message.content, done: json.done });
-							session.dateModified = Date.now();
 							await session.save();
 						} catch (error) {
 							console.error('Error parsing JSON:', error);
@@ -149,10 +147,10 @@ io.on('connection', (socket) => {
 		const userId = socket.request.session.user;
 		if (!checkIfLoggedIn(userId)) return;
 
-		const sessions = await Session.find({
-			userId,
-			'messages.content': { $regex: query, $options: 'i' }
-		}).sort({ dateModified: -1 });
+		// Search for sessions with messages containing the query
+		// regex with i flag is case insensitive
+		// ToDo: Read about indexing in MongoDB
+		const sessions = await Session.find({userId, 'messages.content': { $regex: query, $options: 'i' }}).sort({ updatedAt: -1 });
 		socket.emit('loadSessions', sessions.map(s => ({ id: s._id, name: s.name })));
 	});
 
@@ -179,7 +177,7 @@ io.on('connection', (socket) => {
 		const userId = socket.request.session.user;
 		if (!checkIfLoggedIn(userId)) return;
 		await Session.deleteOne({ _id: sessionId, userId });
-		const sessions = await Session.find({ userId }).sort({ dateModified: -1 });;;
+		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });;;
 		socket.emit('loadSessions', sessions.map(s => ({ id: s._id, name: s.name })));
 	});
 
@@ -187,7 +185,7 @@ io.on('connection', (socket) => {
 		const userId = socket.request.session.user;
 		if (!checkIfLoggedIn(userId)) return;
 		await Session.updateOne({ _id: sessionId, userId }, { name: newName });
-		const sessions = await Session.find({ userId }).sort({ dateModified: -1 });;;
+		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });;;
 		socket.emit('loadSessions', sessions.map(s => ({ id: s._id, name: s.name })));
 	});
 
