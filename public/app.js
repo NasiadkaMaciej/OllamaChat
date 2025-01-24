@@ -96,6 +96,19 @@ function renderSessionItem(sessionId, sessionName) {
 	sessionNameElement.classList.add('session-name');
 	sessionElement.appendChild(sessionNameElement);
 
+	const buttonsWrapper = document.createElement('div');
+	buttonsWrapper.classList.add('buttons-wrapper');
+
+	const regenerateButton = document.createElement('button');
+	regenerateButton.textContent = 'Renew';
+	regenerateButton.title = 'Regenerate title';
+	regenerateButton.classList.add('regenerate-button');
+	regenerateButton.addEventListener('click', (event) => {
+		event.stopPropagation();
+		socket.emit('session:regenerateTitle', sessionId);
+	});
+	buttonsWrapper.appendChild(regenerateButton);
+
 	const editButton = document.createElement('button');
 	editButton.textContent = 'Edit';
 	editButton.classList.add('edit-button');
@@ -104,7 +117,7 @@ function renderSessionItem(sessionId, sessionName) {
 		const newName = prompt('Enter new session name:', sessionName);
 		if (newName) socket.emit('session:rename', sessionId, newName);
 	});
-	sessionElement.appendChild(editButton);
+	buttonsWrapper.appendChild(editButton);
 
 	const deleteButton = document.createElement('button');
 	deleteButton.textContent = 'Delete';
@@ -118,8 +131,9 @@ function renderSessionItem(sessionId, sessionName) {
 			currentSessionId = null;
 		}
 	});
-	sessionElement.appendChild(deleteButton);
+	buttonsWrapper.appendChild(deleteButton);
 
+	sessionElement.appendChild(buttonsWrapper);
 	sessionElement.addEventListener('click', () => openSession(sessionId));
 	sessionsContainer.appendChild(sessionElement);
 }

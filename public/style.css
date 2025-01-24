@@ -23,7 +23,7 @@ body > div {
 button {
   color: white;
   border: none;
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem;
   border-radius: 5px;
   cursor: pointer;
   text-transform: uppercase;
@@ -63,44 +63,70 @@ button {
 }
 #chat-container .sessions-container .session-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.3rem 0.1rem;
-  gap: 5px;
-  border-bottom: 1px solid #ccc;
+  flex-direction: column;
+  padding: 0.7rem;
+  background-color: #fcfcfc;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+#chat-container .sessions-container .session-item:hover {
+  background-color: #f3f3f3;
 }
 #chat-container .sessions-container .session-item .session-name {
   flex-basis: 70%;
   word-break: break-all;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
 }
-#chat-container .sessions-container .session-item button {
-  flex-basis: 10%;
+#chat-container .sessions-container .session-item .buttons-wrapper {
+  display: flex;
+  gap: 8px;
 }
-#chat-container .sessions-container .session-item .edit-button {
+#chat-container .sessions-container .session-item .buttons-wrapper button {
+  flex: 1;
+  cursor: pointer;
+}
+#chat-container .sessions-container .session-item .buttons-wrapper button.regenerate-button {
+  background-color: #2196f3;
+  padding: 0.4rem 0.8rem;
+  transition: all 0.3s ease;
+}
+#chat-container .sessions-container .session-item .buttons-wrapper button.regenerate-button:hover {
+  background-color: #0c83e2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+#chat-container .sessions-container .session-item .buttons-wrapper button.regenerate-button:active {
+  background-color: #0a6ebd;
+  transform: translateY(2px);
+}
+#chat-container .sessions-container .session-item .buttons-wrapper button.edit-button {
   background-color: #4caf50;
   padding: 0.4rem 0.8rem;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
 }
-#chat-container .sessions-container .session-item .edit-button:hover {
+#chat-container .sessions-container .session-item .buttons-wrapper button.edit-button:hover {
   background-color: #409444;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-#chat-container .sessions-container .session-item .edit-button:active {
+#chat-container .sessions-container .session-item .buttons-wrapper button.edit-button:active {
   background-color: #357a38;
   transform: translateY(2px);
 }
-#chat-container .sessions-container .session-item .delete-button {
+#chat-container .sessions-container .session-item .buttons-wrapper button.delete-button {
   background-color: #f44336;
   padding: 0.4rem 0.8rem;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
 }
-#chat-container .sessions-container .session-item .delete-button:hover {
+#chat-container .sessions-container .session-item .buttons-wrapper button.delete-button:hover {
   background-color: #f22112;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-#chat-container .sessions-container .session-item .delete-button:active {
+#chat-container .sessions-container .session-item .buttons-wrapper button.delete-button:active {
   background-color: #d2190b;
   transform: translateY(2px);
 }
@@ -108,7 +134,7 @@ button {
   margin-top: 0;
   background-color: #4caf50;
   padding: 0.4rem 0.8rem;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
 }
 #chat-container .sessions-container button:hover {
   background-color: #409444;
@@ -160,7 +186,7 @@ button {
   border-radius: 10px;
   border: 2px dashed #ccc;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 #chat-container .chat-main .input-container textarea:focus {
   border: 2px dashed #4caf50;
@@ -169,7 +195,7 @@ button {
   margin: 0 0.3rem;
   background-color: #4caf50;
   padding: 0.4rem 0.8rem;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
 }
 #chat-container .chat-main .input-container button:hover {
   background-color: #409444;
@@ -200,13 +226,20 @@ button {
 }
 #auth-container form input {
   padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 2px dashed #ccc;
+  flex: 1;
+  font-size: 1rem;
+  border-radius: 5px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+#auth-container form input:focus {
+  border: 2px dashed #4caf50;
 }
 #auth-container form button {
   background-color: #4caf50;
   padding: 0.4rem 0.8rem;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
 }
 #auth-container form button:hover {
   background-color: #409444;

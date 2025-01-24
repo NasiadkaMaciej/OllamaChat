@@ -38,6 +38,26 @@ function checkIfLoggedIn(userId, socket) {
 	return true;
 }
 
+// Generate a title based on all messages
+async function generateSessionName(message) {
+	try {
+		const question = `
+			Create a concise title for the AI conversation based on the topic below.
+			Most importantly, only include the title, absolutely nothing else.
+			Don't answer the question, just create a title.`
+
+		const response = await axios.post('http://localhost:11434/api/generate', {
+			model: 'llama3.2',
+			prompt: question + message,
+			stream: false
+		});
+		return response.data.response.trim().replace(/"/g, '').trim();
+	} catch (error) {
+		console.error('Error generating session name:', error);
+		return uuidv4(); // Fallback to UUID if generation fails
+	}
+}
+
 io.on('connection', (socket) => {
 	socket.on('auth:register', async ({ username, password }) => {
 		try {
@@ -76,7 +96,7 @@ io.on('connection', (socket) => {
 	socket.on('session:create', async () => {
 		const userId = socket.request.session.user;
 		if (!checkIfLoggedIn(userId, socket)) return;
-		const session = new Session({ userId, name: uuidv4(), messages: [] });
+		const session = new Session({ userId, name: 'New Conversation', messages: [] });
 		await session.save();
 		socket.emit('session:created', session._id, session.name);
 	});
@@ -104,6 +124,16 @@ io.on('connection', (socket) => {
 			return;
 		}
 		session.messages.push({ role: 'user', content: message });
+		// Generate name if this is the first message
+		if (session.messages.length === 1) {
+			const generatedName = await generateSessionName(message);
+			await session.save();
+			session.name = generatedName;
+			await session.save();
+			const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });
+			socket.emit('session:list', sessions.map(s => ({ id: s._id, name: s.name })));
+		}
+
 		await session.save();
 
 		try { // Call Ollama API to generate the chat response
@@ -162,6 +192,22 @@ io.on('connection', (socket) => {
 			console.error('Search error:', error);
 			socket.emit('error', 'Search failed');
 		}
+	});
+
+	socket.on('session:regenerateTitle', async (sessionId) => {
+		const userId = socket.request.session.user;
+		if (!checkIfLoggedIn(userId, socket)) return;
+
+		const session = await Session.findOne({ _id: sessionId, userId });
+		if (!session || session.messages.length === 0) return;
+
+		const firstMessage = session.messages[0].content;
+		const generatedName = await generateSessionName(firstMessage);
+		session.name = generatedName;
+		await session.save();
+
+		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });
+		socket.emit('session:list', sessions.map(s => ({ id: s._id, name: s.name })));
 	});
 
 	function delActiveResponses(sessionId) {
