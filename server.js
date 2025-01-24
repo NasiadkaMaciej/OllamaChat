@@ -13,13 +13,13 @@ const MongoStore = require('connect-mongo');
 const User = require('./schema/user');
 const Session = require('./schema/session');
 
-mongoose.connect('mongodb://localhost:27017/ollama-chat');
+mongoose.connect('mongodb://localhost:27017/OllamaChat');
 
 const sessionMiddleware = session({
 	secret: 'VerySecretKey',
 	resave: false,
 	saveUninitialized: true,
-	store: MongoStore.create({ mongoUrl: 'mongodb://127.0.0.1:27017/ollama-chat' })
+	store: MongoStore.create({ mongoUrl: 'mongodb://127.0.0.1:27017/OllamaChat' })
 });
 
 app.use(sessionMiddleware);
