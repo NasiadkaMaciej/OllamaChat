@@ -30,7 +30,7 @@ app.set("trust proxy", true);
 
 const activeResponses = {}; // Store responses for stopping later
 
-function checkIfLoggedIn(userId) {
+function checkIfLoggedIn(userId, socket) {
 	if (!userId) {
 		socket.emit('loginFail', 'Not logged in.');
 		return false;
@@ -39,67 +39,68 @@ function checkIfLoggedIn(userId) {
 }
 
 io.on('connection', (socket) => {
-	socket.on('register', async ({ username, password }) => {
+	socket.on('auth:register', async ({ username, password }) => {
 		try {
 			const hashedPassword = await bcrypt.hash(password, 10);
 			const user = new User({ username, password: hashedPassword });
 			await user.save();
-			socket.emit('registerSuccess');
+			socket.emit('auth:success', 'Registration successful! Please login.');
 		} catch (error) {
-			socket.emit('registerFail', 'Username already taken.');
+			socket.emit('auth:failed', 'Username already taken.');
 		}
 	});
 
-	socket.on('login', async ({ username, password }) => {
+	socket.on('auth:login', async ({ username, password }) => {
 		const user = await User.findOne({ username });
+		if (!user) {
+			socket.emit('auth:failed', 'Invalid username or password.');
+			return;
+		}
 		const passwordMatch = await bcrypt.compare(password, user.password);
 		if (!passwordMatch) {
-			socket.emit('loginFail', 'Invalid username or password.');
+			socket.emit('auth:failed', 'Invalid username or password.');
 		} else {
 			socket.request.session.user = user._id;
 			socket.request.session.save();
-			socket.emit('loginSuccess');
+			socket.emit('auth:loginSuccess', 'Login successful!');
 		}
 	});
 
-	socket.on('loadSessions', async () => {
+	socket.on('session:load', async () => {
 		const userId = socket.request.session.user;
-		if (!checkIfLoggedIn(userId)) return;
+		if (!checkIfLoggedIn(userId, socket)) return;
 		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });
-		socket.emit('loadSessions', sessions.map(s => ({ id: s._id, name: s.name })));
+		socket.emit('session:list', sessions.map(s => ({ id: s._id, name: s.name })));
 	});
 
-	// Create session
-	socket.on('startSession', async () => {
+	socket.on('session:create', async () => {
 		const userId = socket.request.session.user;
-		if (!checkIfLoggedIn(userId)) return;
-		// ToDo: AI generated name?
+		if (!checkIfLoggedIn(userId, socket)) return;
 		const session = new Session({ userId, name: uuidv4(), messages: [] });
 		await session.save();
-		socket.emit('sessionStarted', session._id, session.name);
+		socket.emit('session:created', session._id, session.name);
 	});
 
-	// Load messages
-	socket.on('loadSession', async (sessionId) => {
+	socket.on('session:open', async (sessionId) => {
 		const userId = socket.request.session.user;
-		if (!checkIfLoggedIn(userId)) return;
+		if (!checkIfLoggedIn(userId, socket)) return;
 
 		const session = await Session.findById(sessionId);
 		if (session.userId.toString() !== userId.toString()) {
-			socket.emit('loginFail', 'Unauthorized.');
+			socket.emit('auth:failed', 'Unauthorized.');
 			return;
 		}
-		socket.emit('loadMessages', session.messages);
+		socket.emit('chat:history', session.messages);
 	});
 
-	socket.on('sendMessage', async (message, sessionId) => {
+	socket.on('chat:send', async (message, sessionId) => {
 		console.log('Received message:', message);
 		const userId = socket.request.session.user;
-		if (!checkIfLoggedIn(userId)) return;
+		if (!checkIfLoggedIn(userId, socket)) return;
 
 		const session = await Session.findById(sessionId);
 		if (!session || session.userId.toString() !== userId.toString()) {
-			socket.emit('loginFail', 'Unauthorized.');
+			socket.emit('auth:failed', 'Unauthorized.');
 			return;
 		}
 		session.messages.push({ role: 'user', content: message });
@@ -123,7 +124,7 @@ io.on('connection', (socket) => {
 						try {
 							const json = JSON.parse(line);
 							console.log('Sent response:', json.message.content);
-							socket.emit('receiveMessage', json.message.content, json.done, sessionId);
+							socket.emit('chat:message', json.message.content, json.done, sessionId);
 							session.messages.push({ role: 'ai', content: json.message.content, done: json.done });
 							await session.save();
 						} catch (error) {
@@ -143,22 +144,34 @@ io.on('connection', (socket) => {
 		}
 	});
 
-	socket.on('search', async (query) => {
-		const userId = socket.request.session.user;
-		if (!checkIfLoggedIn(userId)) return;
+	socket.on('session:search', async (query) => {
+		try {
+			const userId = socket.request.session.user;
+			if (!checkIfLoggedIn(userId, socket)) return;
 
-		// Search for sessions with messages containing the query
-		// regex with i flag is case insensitive
-		// ToDo: Read about indexing in MongoDB
-		const sessions = await Session.find({userId, 'messages.content': { $regex: query, $options: 'i' }}).sort({ updatedAt: -1 });
-		socket.emit('loadSessions', sessions.map(s => ({ id: s._id, name: s.name })));
+			// Search for sessions with messages containing the query
+			// regex with i flag is case insensitive
+			// ToDo: Read about indexing in MongoDB
+			const sessions = await Session.find({
+				userId,
+				'messages.content': { $regex: query, $options: 'i' }
+			}).sort({ updatedAt: -1 });
+
+			socket.emit('session:list', sessions.map(s => ({ id: s._id, name: s.name })));
+		} catch (error) {
+			console.error('Search error:', error);
+			socket.emit('error', 'Search failed');
+		}
 	});
 
-	function delActiveResponses(sid) {
-		if (activeResponses[sid]) {
-			activeResponses[sid].data.destroy();
-			delete activeResponses[sid];
-		}
+	function delActiveResponses(sessionId) {
+		if (activeResponses[sessionId])
+			try {
+				activeResponses[sessionId].data.destroy();
+				delete activeResponses[sessionId];
+			} catch (error) {
+				console.error('Error stopping response:', error);
+			}
 	}
 
 	socket.on('disconnect', async () => {
@@ -169,26 +182,25 @@ io.on('connection', (socket) => {
 		}
 	});
 
-	socket.on('stopResponse', (sessionId) => {
+	socket.on('chat:stop', (sessionId) => {
 		delActiveResponses(sessionId);
 	});
 
-	socket.on('deleteSession', async (sessionId) => {
+	socket.on('session:delete', async (sessionId) => {
 		const userId = socket.request.session.user;
-		if (!checkIfLoggedIn(userId)) return;
+		if (!checkIfLoggedIn(userId, socket)) return;
 		await Session.deleteOne({ _id: sessionId, userId });
-		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });;;
-		socket.emit('loadSessions', sessions.map(s => ({ id: s._id, name: s.name })));
+		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });
+		socket.emit('session:list', sessions.map(s => ({ id: s._id, name: s.name })));
 	});
 
-	socket.on('renameSession', async (sessionId, newName) => {
+	socket.on('session:rename', async (sessionId, newName) => {
 		const userId = socket.request.session.user;
-		if (!checkIfLoggedIn(userId)) return;
+		if (!checkIfLoggedIn(userId, socket)) return;
 		await Session.updateOne({ _id: sessionId, userId }, { name: newName });
-		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });;;
-		socket.emit('loadSessions', sessions.map(s => ({ id: s._id, name: s.name })));
+		const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });
+		socket.emit('session:list', sessions.map(s => ({ id: s._id, name: s.name })));
 	});
-
 });
 
 // Start the server

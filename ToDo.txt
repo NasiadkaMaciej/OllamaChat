@@ -8,7 +8,9 @@ Sessions in url?
 Messages edit 
 Display if response is generated 
 Highlight active session 
-New session only when message is sent 
 Handle errors?
 Move code to new files 
 RWD 
+Add logout button 
+Cookies 
+Session restore 

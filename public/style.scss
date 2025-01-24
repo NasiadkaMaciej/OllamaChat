@@ -1,6 +1,6 @@
 @mixin button-states($bg-color) {
 	background-color: $bg-color;
-	padding: 0.5rem 1rem;
+	padding: 0.4rem 0.8rem;
 	transition: all 0.3s ease-in-out;
 	&:hover {
 		background-color: darken($bg-color, 7.5%);
@@ -86,12 +86,17 @@ button {
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
-			padding: 0.1rem;
+			padding: 0.3rem 0.1rem;
 			gap: 5px;
+			border-bottom: 1px solid #ccc;
 
 			.session-name {
 				flex-basis: 70%;
 				word-break: break-all;
+			}
+			
+			button {
+				flex-basis: 10%;
 			}
 
 			.edit-button {
@@ -102,9 +107,6 @@ button {
 				@include button-states(#f44336);
 			}
 
-			button {
-				flex-basis: 10%;
-			}
 		}
 
 		button {

@@ -65,16 +65,20 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.1rem;
+  padding: 0.3rem 0.1rem;
   gap: 5px;
+  border-bottom: 1px solid #ccc;
 }
 #chat-container .sessions-container .session-item .session-name {
   flex-basis: 70%;
   word-break: break-all;
 }
+#chat-container .sessions-container .session-item button {
+  flex-basis: 10%;
+}
 #chat-container .sessions-container .session-item .edit-button {
   background-color: #4caf50;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   transition: all 0.3s ease-in-out;
 }
 #chat-container .sessions-container .session-item .edit-button:hover {
@@ -88,7 +92,7 @@ button {
 }
 #chat-container .sessions-container .session-item .delete-button {
   background-color: #f44336;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   transition: all 0.3s ease-in-out;
 }
 #chat-container .sessions-container .session-item .delete-button:hover {
@@ -100,13 +104,10 @@ button {
   background-color: #d2190b;
   transform: translateY(2px);
 }
-#chat-container .sessions-container .session-item button {
-  flex-basis: 10%;
-}
 #chat-container .sessions-container button {
   margin-top: 0;
   background-color: #4caf50;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   transition: all 0.3s ease-in-out;
 }
 #chat-container .sessions-container button:hover {
@@ -167,7 +168,7 @@ button {
 #chat-container .chat-main .input-container button {
   margin: 0 0.3rem;
   background-color: #4caf50;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   transition: all 0.3s ease-in-out;
 }
 #chat-container .chat-main .input-container button:hover {
@@ -204,7 +205,7 @@ button {
 }
 #auth-container form button {
   background-color: #4caf50;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   transition: all 0.3s ease-in-out;
 }
 #auth-container form button:hover {
