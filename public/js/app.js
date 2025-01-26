@@ -59,7 +59,7 @@ function clearOutput() {
 // Validate username/password inputs
 function validateInputs(username, password) {
 	if (!username || !password) {
-		alert("Username and password are required.");
+		showToast('Username and password are required.');
 		return false;
 	}
 	return true;
@@ -75,8 +75,7 @@ function appendMessage(role, message, done = false, animate = false) {
 
 	// If no message element exists, or the role has changed, create a new message element
 	if (!currentMessageElement || !currentMessageElement.classList.contains(role)) {
-		currentMessageElement = document.createElement('div');
-		currentMessageElement.classList.add('message', role);
+		currentMessageElement = createElement('div', ['message', role]);
 		outputContainer.appendChild(currentMessageElement);
 	}
 	if (animate) {
@@ -91,31 +90,22 @@ function appendMessage(role, message, done = false, animate = false) {
 
 // Render a session item in the sessions container
 function renderSessionItem(sessionId, sessionName) {
-	const sessionElement = document.createElement('div');
-	sessionElement.classList.add('session-item');
-	sessionElement.setAttribute('data-session-id', sessionId);
+	const sessionElement = createElement('div', ['session-item'], '', { 'data-session-id': sessionId });
 
-	const sessionNameElement = document.createElement('span');
-	sessionNameElement.textContent = sessionName;
-	sessionNameElement.classList.add('session-name');
+	const sessionNameElement = createElement('span', ['session-name'], sessionName);
 	sessionElement.appendChild(sessionNameElement);
 
-	const buttonsWrapper = document.createElement('div');
-	buttonsWrapper.classList.add('buttons-wrapper');
+	const buttonsWrapper = createElement('div', ['buttons-wrapper']);
 
-	const regenerateButton = document.createElement('button');
-	regenerateButton.textContent = 'Renew';
+	const regenerateButton = createElement('button', ['regenerate-button'], 'Renew');
 	regenerateButton.title = 'Regenerate title';
-	regenerateButton.classList.add('regenerate-button');
 	regenerateButton.addEventListener('click', (event) => {
 		event.stopPropagation();
 		socket.emit('session:regenerateTitle', sessionId);
 	});
 	buttonsWrapper.appendChild(regenerateButton);
 
-	const editButton = document.createElement('button');
-	editButton.textContent = 'Edit';
-	editButton.classList.add('edit-button');
+	const editButton = createElement('button', ['edit-button'], 'Edit');
 	editButton.addEventListener('click', (event) => {
 		event.stopPropagation();
 		const newName = prompt('Enter new session name:', sessionName);
@@ -123,9 +113,7 @@ function renderSessionItem(sessionId, sessionName) {
 	});
 	buttonsWrapper.appendChild(editButton);
 
-	const deleteButton = document.createElement('button');
-	deleteButton.textContent = 'Delete';
-	deleteButton.classList.add('delete-button');
+	const deleteButton = createElement('button', ['delete-button'], 'Delete');
 	deleteButton.addEventListener('click', (event) => {
 		event.stopPropagation();
 		socket.emit('session:delete', sessionId);
@@ -147,10 +135,16 @@ function createNewSession(callback) {
 	stopCurrentResponse();
 	currentSessionId = null;
 	outputContainer.innerHTML = '';
+	deleteCookie('lastOpenedSession');
 	isTyping = false;
 	socket.emit('session:create');
 	socket.once('session:created', (sessionId) => {
+		if (!sessionId) {
+			showToast('Failed to create session.');
+			return;
+		}
 		currentSessionId = sessionId;
+		setCookie('lastOpenedSession', sessionId);
 		callback();
 	});
 }
@@ -159,7 +153,7 @@ function createNewSession(callback) {
 function openSession(sessionId) {
 	stopCurrentResponse();
 	currentSessionId = sessionId;
-	setCookie('lastOpenedSession', sessionId, 1);
+	setCookie('lastOpenedSession', sessionId);
 	socket.emit('session:open', sessionId);
 
 	// Highlight active session
@@ -210,7 +204,7 @@ registerForm.addEventListener('submit', (event) => {
 	const confirmPassword = document.getElementById('regConfirmPassword').value.trim();
 	if (!validateInputs(username, password)) return;
 	if (password !== confirmPassword) {
-		alert("Passwords do not match!");
+		showToast('Passwords do not match!');
 		return;
 	}
 	socket.emit('auth:register', { username, password });
@@ -233,6 +227,7 @@ document.getElementById('searchInput').addEventListener('input', () => {
 socket.on('chat:message', (message, done, sessionId) => {
 	if (sessionId !== currentSessionId) return;
 	appendMessage('ai', message, done, true);
+	setCookie('lastOpenedSession', sessionId);
 });
 
 // List sessions
@@ -241,7 +236,11 @@ socket.on('session:list', (sessions) => {
 	sessions.forEach((s) => renderSessionItem(s.id, s.name));
 
 	const lastOpenedSession = getCookie('lastOpenedSession');
-	if (lastOpenedSession) openSession(lastOpenedSession);
+	if (lastOpenedSession) { // Open last opened session, if it doesn't exist, delete cookie
+		const sessionExists = sessions.some(s => s.id === lastOpenedSession);
+		if (sessionExists) openSession(lastOpenedSession);
+		else deleteCookie('lastOpenedSession');
+	}
 });
 
 // Load chat messages
@@ -267,7 +266,20 @@ socket.on('auth:loginSuccess', () => {
 	if (lastOpenedSession) openSession(lastOpenedSession);
 });
 
-socket.on('auth:success', (msg) => alert(msg));
-socket.on('auth:failed', (msg) => alert(msg));
+socket.on('auth:success', (msg) => showToast(msg, false));
+socket.on('auth:failed', (msg) => showToast(msg));
 
-// ToDo: Some error toasts
+socket.on('error', (message) => {
+	showToast(message);
+});
+
+function showToast(message, error = true) {
+	const toast = document.createElement('div');
+	toast.className = 'toast';
+	if (error) toast.classList.add('error');
+	toast.textContent = message;
+	document.body.appendChild(toast);
+	setTimeout(() => {
+		toast.remove();
+	}, 5000);
+}

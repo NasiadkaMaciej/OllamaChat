@@ -7,17 +7,22 @@ const router = express.Router();
 app.use('/api', router);
 
 router.get('/memory', (req, res) => {
-	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-	const totalMemory = os.totalmem();
-	const freeMemory = os.freemem();
-	const usedMemory = totalMemory - freeMemory;
+	try {
+		res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+		const totalMemory = os.totalmem();
+		const freeMemory = os.freemem();
+		const usedMemory = totalMemory - freeMemory;
 
-	res.json({
-		total: Math.round(totalMemory / 1024 / 1024 / 1024), // Needed for progress bar
-		free: Math.round(freeMemory / 1024 / 1024 / 1024),
-		used: Math.round(usedMemory / 1024 / 1024 / 1024),
-		timestamp: Date.now() // Prevent cache
-	});
+		res.json({
+			total: Math.round(totalMemory / 1024 / 1024 / 1024), // Needed for progress bar
+			free: Math.round(freeMemory / 1024 / 1024 / 1024),
+			used: Math.round(usedMemory / 1024 / 1024 / 1024),
+			timestamp: Date.now() // Prevent cache
+		});
+	} catch (error) {
+		console.error('Error fetching memory info:', error);
+		res.status(500).json({ error: 'Failed to fetch memory info' });
+	}
 });
 
 async function getLoadedModels() {
@@ -26,7 +31,7 @@ async function getLoadedModels() {
 		return response.data.models.map(model => model.name);
 	} catch (error) {
 		console.error('Error fetching loaded models:', error);
-		return [];
+		throw new Error('Failed to fetch loaded models');
 	}
 }
 

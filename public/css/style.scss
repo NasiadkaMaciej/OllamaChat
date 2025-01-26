@@ -331,3 +331,43 @@ button {
 		}
 	}
 }
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+	background: $primary-color;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideIn 0.5s ease-out, fadeInOut 5s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+	&.error {
+		background: $danger-color;
+	}
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInOut {
+    0%, 100% {
+        opacity: 0;
+    }
+    10%, 90% {
+        opacity: 1;
+    }
+}

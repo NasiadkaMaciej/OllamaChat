@@ -29,6 +29,7 @@ async function updateSystemInfo() {
 		});
 
 		// ToDo: Implement loading and unloading models
+		// ToDo: No "Use" and "Load" buttons. Just status and action depending on it
 		const modelsList = models.map(model => `
 			<div class="model-item">
 				<div class="model-header">
@@ -58,11 +59,11 @@ async function updateSystemInfo() {
 }
 
 function selectModel(modelName) {
-    currentModel = modelName;
-    const selectedModel = models.find(model => model.name === modelName);
-    if (selectedModel) currentModelSize = selectedModel.size; // Get size for speed calculation
-    setCookie('lastSelectedModel', modelName, 1);
-    updateSystemInfo();
+	currentModel = modelName;
+	const selectedModel = models.find(model => model.name === modelName);
+	if (selectedModel) currentModelSize = selectedModel.size; // Get size for speed calculation
+	setCookie('lastSelectedModel', modelName);
+	updateSystemInfo();
 }
 
 const lastSelectedModel = getCookie('lastSelectedModel');
