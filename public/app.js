@@ -165,14 +165,6 @@ function searchSessions() {
 	else socket.emit('session:load');
 }
 
-// Send user message
-function sendUserMessage(message) {
-	responseInProgress = true;
-	socket.emit('chat:send', message, currentSessionId);
-	appendMessage('user', message);
-	promptInput.value = '';
-}
-
 // Send message and optionally create new session
 function handleSendMessage() {
 	if (responseInProgress) return;
@@ -185,7 +177,7 @@ function handleSendMessage() {
 // Send chat message and append to output
 function sendChatMessage(message) {
 	responseInProgress = true;
-	socket.emit('chat:send', message, currentSessionId);
+	socket.emit('chat:send', message, currentSessionId, currentModel);
 	appendMessage('user', message);
 	promptInput.value = '';
 }
@@ -260,3 +252,5 @@ socket.on('auth:loginSuccess', () => {
 
 socket.on('auth:success', (msg) => alert(msg));
 socket.on('auth:failed', (msg) => alert(msg));
+
+// ToDo: Some error toasts

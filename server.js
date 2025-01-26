@@ -31,6 +31,7 @@ app.set("trust proxy", true);
 const activeResponses = {}; // Store responses for stopping later
 
 function checkIfLoggedIn(userId, socket) {
+	// ToDo: Cookies
 	if (!userId) {
 		socket.emit('loginFail', 'Not logged in.');
 		return false;
@@ -113,7 +114,27 @@ io.on('connection', (socket) => {
 		socket.emit('chat:history', session.messages);
 	});
 
-	socket.on('chat:send', async (message, sessionId) => {
+	const checkIfModelLoaded = async (modelName) => {
+		const userId = socket.request.session.user;
+		if (!checkIfLoggedIn(userId, socket)) return;
+		try { // Verify model exists and is loaded
+			const response = await axios.get('http://127.0.0.1:11434/api/ps');
+			const loadedModels = response.data.models.map(m => m.name);
+			if (!loadedModels.includes(modelName)) {
+				socket.emit('error', 'Selected model is not loaded');
+				return;
+			}
+		} catch (error) {
+			socket.emit('error', 'Could not verify model status');
+			return;
+		}
+	}
+
+	socket.on('model:select', async (modelName) => {
+		checkIfModelLoaded(modelName);
+	});
+
+	socket.on('chat:send', async (message, sessionId, modelName) => {
 		console.log('Received message:', message);
 		const userId = socket.request.session.user;
 		if (!checkIfLoggedIn(userId, socket)) return;
@@ -123,11 +144,12 @@ io.on('connection', (socket) => {
 			socket.emit('auth:failed', 'Unauthorized.');
 			return;
 		}
+
+		checkIfModelLoaded(modelName);
 		session.messages.push({ role: 'user', content: message });
 		// Generate name if this is the first message
 		if (session.messages.length === 1) {
 			const generatedName = await generateSessionName(message);
-			await session.save();
 			session.name = generatedName;
 			await session.save();
 			const sessions = await Session.find({ userId }).sort({ updatedAt: -1 });
@@ -138,7 +160,7 @@ io.on('connection', (socket) => {
 
 		try { // Call Ollama API to generate the chat response
 			const response = await axios.post('http://127.0.0.1:11434/api/chat', {
-				model: 'qwen2.5-coder:32b',
+				model: modelName,
 				messages: session.messages
 			}, {
 				headers: { 'Content-Type': 'application/json' },
@@ -171,6 +193,7 @@ io.on('connection', (socket) => {
 
 		} catch (error) {
 			console.error('Error during API call:', error);
+			socket.emit('error', 'Chat generation failed');
 		}
 	});
 

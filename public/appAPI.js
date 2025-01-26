@@ -1,4 +1,5 @@
 let refreshInterval;
+let currentModel = 'qwen2.5-coder:32b'; // Default model
 
 async function updateSystemInfo() {
 	try {
@@ -15,10 +16,15 @@ async function updateSystemInfo() {
 				<span class="used-memory">${memoryData.used} GB</span>
 				<span class="free-memory">${memoryData.free} GB</span>
 			</div>
-        `;
+		`;
 
 		const modelsResponse = await fetch('https://ai.nasiadka.pl/api/models');
 		const models = await modelsResponse.json();
+		models.sort((a, b) => { // Sort loaded models first, then alphabetically
+			if (a.isLoaded === b.isLoaded)
+				return a.name.localeCompare(b.name);
+			return b.isLoaded - a.isLoaded;
+		});
 
 		// ToDo: Implement loading and unloading models
 		// ToDo: Implement using models
@@ -30,9 +36,13 @@ async function updateSystemInfo() {
 					<span class="model-size">${model.size} GB</span>
 				</div>
 				<div class="buttons-wrapper">
-					<button class="use-button">Use</button>
-					<button class="load-button">Load</button>
-					<button class="unload-button">Unload</button>
+					<button class="use-button ${model.name === currentModel ? 'selected' : ''}" 
+							onclick="selectModel('${model.name}')"
+							${!model.isLoaded ? 'disabled' : ''}>Use</button>
+					${model.isLoaded
+				? `<button class="unload-button">Unload</button>`
+				: `<button class="load-button">Load</button>`
+			}
 				</div>
 			</div>
 		`).join('');
@@ -45,6 +55,11 @@ async function updateSystemInfo() {
 	} catch (error) {
 		console.error('Error updating system info:', error);
 	}
+}
+
+function selectModel(modelName) {
+	currentModel = modelName;
+	updateSystemInfo();
 }
 
 updateSystemInfo();

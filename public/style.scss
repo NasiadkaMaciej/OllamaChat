@@ -5,6 +5,8 @@ $border-color: #ddd;
 $background-light: #e6e6e6;
 $background-lighter: #eeeeee;
 $background-lightest: #f8f8f8;
+$text-color: #666;
+$text-color-dark: #333;
 
 @mixin button-states($bg-color) {
 	background-color: $bg-color;
@@ -26,7 +28,6 @@ $background-lightest: #f8f8f8;
 @mixin side-panel {
 	width: 25%;
 	background-color: $background-lighter;
-	border: 1px solid $border-color;
 	display: flex;
 	flex-direction: column;
 	padding: 1rem;
@@ -43,7 +44,7 @@ $background-lightest: #f8f8f8;
 	transition: all 0.3s ease;
 
 	&:hover {
-		background-color: $background-lighter;
+		background-color: $background-light;
 	}
 }
 
@@ -58,7 +59,8 @@ $background-lightest: #f8f8f8;
 	}
 }
 
-input, textarea {
+input,
+textarea {
 	flex: 1;
 	font-size: 1rem;
 	padding: 0.5rem;
@@ -183,7 +185,7 @@ button {
 				position: absolute;
 				z-index: 2;
 				padding: 0.2rem;
-				color: #333;
+				color: $text-color-dark;
 				font-weight: 500;
 				top: 50%;
 				transform: translateY(-50%);
@@ -215,16 +217,31 @@ button {
 				}
 
 				.model-size {
-					color: #666;
+					color: $text-color-dark;
 					font-size: 0.9em;
+					text-align: right
 				}
 			}
 
 			.buttons-wrapper {
 				@include button-group;
 
+				button {
+					&:disabled {
+						opacity: 0.5;
+						cursor: not-allowed !important;
+						transform: none !important;
+						box-shadow: none !important;
+					}
+				}
+
 				.use-button {
 					@include button-states($primary-color);
+
+					&.selected {
+						background-color: darken($primary-color, 15%) !important;
+
+					}
 				}
 
 				.load-button {
