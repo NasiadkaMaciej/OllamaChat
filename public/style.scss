@@ -1,7 +1,16 @@
+$primary-color: #4caf50;
+$secondary-color: #2196f3;
+$danger-color: #f44336;
+$border-color: #ddd;
+$background-light: #e6e6e6;
+$background-lighter: #eeeeee;
+$background-lightest: #f8f8f8;
+
 @mixin button-states($bg-color) {
 	background-color: $bg-color;
 	padding: 0.4rem 0.8rem;
 	transition: all 0.3s ease;
+
 	&:hover {
 		background-color: darken($bg-color, 7.5%);
 		transform: translateY(-2px);
@@ -14,6 +23,56 @@
 	}
 }
 
+@mixin side-panel {
+	width: 25%;
+	background-color: $background-lighter;
+	border: 1px solid $border-color;
+	display: flex;
+	flex-direction: column;
+	padding: 1rem;
+	overflow-y: auto;
+	height: 100%;
+}
+
+@mixin list-item {
+	background-color: $background-lightest;
+	border-radius: 6px;
+	margin-bottom: 8px;
+	padding: 0.7rem;
+	cursor: pointer;
+	transition: all 0.3s ease;
+
+	&:hover {
+		background-color: $background-lighter;
+	}
+}
+
+@mixin button-group {
+	display: flex;
+	gap: 8px;
+	margin-top: 0.5rem;
+
+	button {
+		flex: 1;
+		cursor: pointer;
+	}
+}
+
+input, textarea {
+	flex: 1;
+	font-size: 1rem;
+	padding: 0.5rem;
+	resize: none;
+	border-radius: 10px;
+	border: 2px dashed $border-color;
+	outline: none;
+	transition: all 0.3s ease;
+
+	&:focus {
+		border: 2px dashed $primary-color;
+	}
+}
+
 * {
 	margin: 0;
 	padding: 0;
@@ -22,19 +81,18 @@
 
 body {
 	font-family: Arial, sans-serif;
-	background-color: #f0f0f0;
+	background-color: $background-light;
 	color: #333;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	height: 100vh;
 
-	> div {
-		border: 1px solid #ddd;
+	>div {
+		border: 1px solid $border-color;
 		background-color: #fff;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 		border-radius: 10px;
-
 	}
 }
 
@@ -54,25 +112,12 @@ button {
 	overflow: hidden;
 
 	.sessions-container {
-		width: 25%;
-		background-color: #e8e8e8;
-		border-right: 1px solid #ddd;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		overflow-y: auto;
-		height: 100%;
+		@include side-panel;
+		border-right: 1px solid $border-color;
 
 		.search-container {
 			display: flex;
 			margin-bottom: 1rem;
-
-			input {
-				padding: 0.5rem;
-				border-radius: 10px;
-				border: 2px solid #ccc;
-				width: 100%;
-			}
 		}
 
 		#sessions {
@@ -83,53 +128,113 @@ button {
 		}
 
 		.session-item {
-			display: flex;
-			flex-direction: column;
-			padding: 0.7rem;
-			background-color: #fcfcfc;
-			border-radius: 6px;
-			margin-bottom: 8px;
-			cursor: pointer;
-			transition: all 0.3s ease;
-
-			&:hover {
-				background-color: #f3f3f3;
-			}
+			@include list-item;
 
 			.session-name {
 				flex-basis: 70%;
 				word-break: break-all;
-				margin-bottom: 0.5rem;
 				font-weight: 500;
 			}
 
 			.buttons-wrapper {
+				@include button-group;
+
+				.regenerate-button {
+					@include button-states($secondary-color);
+				}
+
+				.edit-button {
+					@include button-states($primary-color);
+				}
+
+				.delete-button {
+					@include button-states($danger-color);
+				}
+			}
+		}
+
+		>button {
+			margin-top: 0;
+			@include button-states($primary-color);
+		}
+	}
+
+	.right-panel {
+		@include side-panel;
+		width: 20%;
+		border-left: 1px solid $border-color;
+
+		.memory-progress {
+			@include list-item;
+			position: relative;
+			height: 2rem;
+			overflow: hidden;
+
+			.progress-bar {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				height: 100%;
+				background: $primary-color;
+				transition: width 0.3s ease;
+			}
+
+			%memory-text {
+				position: absolute;
+				z-index: 2;
+				padding: 0.2rem;
+				color: #333;
+				font-weight: 500;
+				top: 50%;
+				transform: translateY(-50%);
+			}
+
+			.used-memory {
+				@extend %memory-text;
+				left: 1rem;
+			}
+
+			.free-memory {
+				@extend %memory-text;
+				right: 1rem;
+			}
+		}
+
+		.model-item {
+			@include list-item;
+
+			.model-header {
 				display: flex;
-				gap: 8px;
+				justify-content: space-between;
+				align-items: center;
 
-				button {
-					flex: 1;
-					cursor: pointer;
+				.model-name {
+					flex-basis: 70%;
+					word-break: break-all;
+					font-weight: 500;
+				}
 
-					&.regenerate-button {
-						@include button-states(#2196f3);
-					}
-
-					&.edit-button {
-						@include button-states(#4caf50);
-					}
-
-					&.delete-button {
-						@include button-states(#f44336);
-					}
+				.model-size {
+					color: #666;
+					font-size: 0.9em;
 				}
 			}
 
-		}
+			.buttons-wrapper {
+				@include button-group;
 
-		button {
-			margin-top: 0;
-			@include button-states(#4caf50);
+				.use-button {
+					@include button-states($primary-color);
+				}
+
+				.load-button {
+					@include button-states($secondary-color);
+				}
+
+				.unload-button {
+					@include button-states($danger-color);
+				}
+			}
 		}
 	}
 
@@ -142,7 +247,7 @@ button {
 			flex: 1;
 			padding: 1rem;
 			overflow-y: auto;
-			border-bottom: 1px solid #ddd;
+			border-bottom: 1px solid $border-color;
 			display: flex;
 			flex-direction: column;
 			gap: 0;
@@ -159,7 +264,7 @@ button {
 				}
 
 				&.ai {
-					background-color: #f0f0f0;
+					background-color: $background-light;
 					align-self: baseline;
 				}
 			}
@@ -168,26 +273,15 @@ button {
 		.input-container {
 			display: flex;
 			padding: 1rem;
-			background-color: #f9f9f9;
-
-			textarea {
-				flex: 1;
-				font-size: 1rem;
-				padding: 0.5rem;
-				resize: none;
-				border-radius: 10px;
-				border: 2px dashed #ccc;
-				outline: none;
-				transition: all 0.3s ease;
-
-				&:focus {
-					border: 2px dashed #4caf50;
-				}
-			}
+			background-color: $background-lightest;
 
 			button {
 				margin: 0 0.3rem;
-				@include button-states(#4caf50);
+				@include button-states($primary-color);
+
+				&.stopButton {
+					@include button-states($danger-color);
+				}
 			}
 		}
 	}
@@ -211,22 +305,8 @@ button {
 		flex-direction: column;
 		gap: 0.5rem;
 
-		input {
-			padding: 0.5rem;
-			border: 2px dashed #ccc;
-			flex: 1;
-			font-size: 1rem;
-			border-radius: 5px;
-			outline: none;
-			transition: all 0.3s ease;
-
-			&:focus {
-				border: 2px dashed #4caf50;
-			}
-		}
-
 		button {
-			@include button-states(#4caf50);
+			@include button-states($primary-color);
 		}
 	}
 }

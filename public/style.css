@@ -1,3 +1,17 @@
+input, textarea {
+  flex: 1;
+  font-size: 1rem;
+  padding: 0.5rem;
+  resize: none;
+  border-radius: 10px;
+  border: 2px dashed #ddd;
+  outline: none;
+  transition: all 0.3s ease;
+}
+input:focus, textarea:focus {
+  border: 2px dashed #4caf50;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,7 +20,7 @@
 
 body {
   font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
+  background-color: #e6e6e6;
   color: #333;
   display: flex;
   align-items: center;
@@ -37,23 +51,18 @@ button {
 }
 #chat-container .sessions-container {
   width: 25%;
-  background-color: #e8e8e8;
-  border-right: 1px solid #ddd;
+  background-color: #eeeeee;
+  border: 1px solid #ddd;
   display: flex;
   flex-direction: column;
   padding: 1rem;
   overflow-y: auto;
   height: 100%;
+  border-right: 1px solid #ddd;
 }
 #chat-container .sessions-container .search-container {
   display: flex;
   margin-bottom: 1rem;
-}
-#chat-container .sessions-container .search-container input {
-  padding: 0.5rem;
-  border-radius: 10px;
-  border: 2px solid #ccc;
-  width: 100%;
 }
 #chat-container .sessions-container #sessions {
   flex: 1;
@@ -62,87 +71,210 @@ button {
   scrollbar-width: none;
 }
 #chat-container .sessions-container .session-item {
-  display: flex;
-  flex-direction: column;
-  padding: 0.7rem;
-  background-color: #fcfcfc;
+  background-color: #f8f8f8;
   border-radius: 6px;
   margin-bottom: 8px;
+  padding: 0.7rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 #chat-container .sessions-container .session-item:hover {
-  background-color: #f3f3f3;
+  background-color: #eeeeee;
 }
 #chat-container .sessions-container .session-item .session-name {
   flex-basis: 70%;
   word-break: break-all;
-  margin-bottom: 0.5rem;
   font-weight: 500;
 }
 #chat-container .sessions-container .session-item .buttons-wrapper {
   display: flex;
   gap: 8px;
+  margin-top: 0.5rem;
 }
 #chat-container .sessions-container .session-item .buttons-wrapper button {
   flex: 1;
   cursor: pointer;
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.regenerate-button {
+#chat-container .sessions-container .session-item .buttons-wrapper .regenerate-button {
   background-color: #2196f3;
   padding: 0.4rem 0.8rem;
   transition: all 0.3s ease;
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.regenerate-button:hover {
+#chat-container .sessions-container .session-item .buttons-wrapper .regenerate-button:hover {
   background-color: #0c83e2;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.regenerate-button:active {
+#chat-container .sessions-container .session-item .buttons-wrapper .regenerate-button:active {
   background-color: #0a6ebd;
   transform: translateY(2px);
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.edit-button {
+#chat-container .sessions-container .session-item .buttons-wrapper .edit-button {
   background-color: #4caf50;
   padding: 0.4rem 0.8rem;
   transition: all 0.3s ease;
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.edit-button:hover {
+#chat-container .sessions-container .session-item .buttons-wrapper .edit-button:hover {
   background-color: #409444;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.edit-button:active {
+#chat-container .sessions-container .session-item .buttons-wrapper .edit-button:active {
   background-color: #357a38;
   transform: translateY(2px);
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.delete-button {
+#chat-container .sessions-container .session-item .buttons-wrapper .delete-button {
   background-color: #f44336;
   padding: 0.4rem 0.8rem;
   transition: all 0.3s ease;
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.delete-button:hover {
+#chat-container .sessions-container .session-item .buttons-wrapper .delete-button:hover {
   background-color: #f22112;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-#chat-container .sessions-container .session-item .buttons-wrapper button.delete-button:active {
+#chat-container .sessions-container .session-item .buttons-wrapper .delete-button:active {
   background-color: #d2190b;
   transform: translateY(2px);
 }
-#chat-container .sessions-container button {
+#chat-container .sessions-container > button {
   margin-top: 0;
   background-color: #4caf50;
   padding: 0.4rem 0.8rem;
   transition: all 0.3s ease;
 }
-#chat-container .sessions-container button:hover {
+#chat-container .sessions-container > button:hover {
   background-color: #409444;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-#chat-container .sessions-container button:active {
+#chat-container .sessions-container > button:active {
   background-color: #357a38;
+  transform: translateY(2px);
+}
+#chat-container .right-panel {
+  width: 25%;
+  background-color: #eeeeee;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  overflow-y: auto;
+  height: 100%;
+  width: 20%;
+  border-left: 1px solid #ddd;
+}
+#chat-container .right-panel .memory-progress {
+  background-color: #f8f8f8;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  padding: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  height: 2rem;
+  overflow: hidden;
+}
+#chat-container .right-panel .memory-progress:hover {
+  background-color: #eeeeee;
+}
+#chat-container .right-panel .memory-progress .progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  background: #4caf50;
+  transition: width 0.3s ease;
+}
+#chat-container .right-panel .memory-progress .free-memory, #chat-container .right-panel .memory-progress .used-memory {
+  position: absolute;
+  z-index: 2;
+  padding: 0.2rem;
+  color: #333;
+  font-weight: 500;
+  top: 50%;
+  transform: translateY(-50%);
+}
+#chat-container .right-panel .memory-progress .used-memory {
+  left: 1rem;
+}
+#chat-container .right-panel .memory-progress .free-memory {
+  right: 1rem;
+}
+#chat-container .right-panel .model-item {
+  background-color: #f8f8f8;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  padding: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+#chat-container .right-panel .model-item:hover {
+  background-color: #eeeeee;
+}
+#chat-container .right-panel .model-item .model-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#chat-container .right-panel .model-item .model-header .model-name {
+  flex-basis: 70%;
+  word-break: break-all;
+  font-weight: 500;
+}
+#chat-container .right-panel .model-item .model-header .model-size {
+  color: #666;
+  font-size: 0.9em;
+}
+#chat-container .right-panel .model-item .buttons-wrapper {
+  display: flex;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+#chat-container .right-panel .model-item .buttons-wrapper button {
+  flex: 1;
+  cursor: pointer;
+}
+#chat-container .right-panel .model-item .buttons-wrapper .use-button {
+  background-color: #4caf50;
+  padding: 0.4rem 0.8rem;
+  transition: all 0.3s ease;
+}
+#chat-container .right-panel .model-item .buttons-wrapper .use-button:hover {
+  background-color: #409444;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+#chat-container .right-panel .model-item .buttons-wrapper .use-button:active {
+  background-color: #357a38;
+  transform: translateY(2px);
+}
+#chat-container .right-panel .model-item .buttons-wrapper .load-button {
+  background-color: #2196f3;
+  padding: 0.4rem 0.8rem;
+  transition: all 0.3s ease;
+}
+#chat-container .right-panel .model-item .buttons-wrapper .load-button:hover {
+  background-color: #0c83e2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+#chat-container .right-panel .model-item .buttons-wrapper .load-button:active {
+  background-color: #0a6ebd;
+  transform: translateY(2px);
+}
+#chat-container .right-panel .model-item .buttons-wrapper .unload-button {
+  background-color: #f44336;
+  padding: 0.4rem 0.8rem;
+  transition: all 0.3s ease;
+}
+#chat-container .right-panel .model-item .buttons-wrapper .unload-button:hover {
+  background-color: #f22112;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+#chat-container .right-panel .model-item .buttons-wrapper .unload-button:active {
+  background-color: #d2190b;
   transform: translateY(2px);
 }
 #chat-container .chat-main {
@@ -170,26 +302,13 @@ button {
   align-self: end;
 }
 #chat-container .chat-main .output-container .message.ai {
-  background-color: #f0f0f0;
+  background-color: #e6e6e6;
   align-self: baseline;
 }
 #chat-container .chat-main .input-container {
   display: flex;
   padding: 1rem;
-  background-color: #f9f9f9;
-}
-#chat-container .chat-main .input-container textarea {
-  flex: 1;
-  font-size: 1rem;
-  padding: 0.5rem;
-  resize: none;
-  border-radius: 10px;
-  border: 2px dashed #ccc;
-  outline: none;
-  transition: all 0.3s ease;
-}
-#chat-container .chat-main .input-container textarea:focus {
-  border: 2px dashed #4caf50;
+  background-color: #f8f8f8;
 }
 #chat-container .chat-main .input-container button {
   margin: 0 0.3rem;
@@ -204,6 +323,20 @@ button {
 }
 #chat-container .chat-main .input-container button:active {
   background-color: #357a38;
+  transform: translateY(2px);
+}
+#chat-container .chat-main .input-container button.stopButton {
+  background-color: #f44336;
+  padding: 0.4rem 0.8rem;
+  transition: all 0.3s ease;
+}
+#chat-container .chat-main .input-container button.stopButton:hover {
+  background-color: #f22112;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+#chat-container .chat-main .input-container button.stopButton:active {
+  background-color: #d2190b;
   transform: translateY(2px);
 }
 
@@ -223,18 +356,6 @@ button {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-#auth-container form input {
-  padding: 0.5rem;
-  border: 2px dashed #ccc;
-  flex: 1;
-  font-size: 1rem;
-  border-radius: 5px;
-  outline: none;
-  transition: all 0.3s ease;
-}
-#auth-container form input:focus {
-  border: 2px dashed #4caf50;
 }
 #auth-container form button {
   background-color: #4caf50;

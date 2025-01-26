@@ -251,5 +251,5 @@ io.on('connection', (socket) => {
 
 // Start the server
 server.listen(3003, () => {
-	console.log(`Server is running on http://localhost:3003`);
+	console.log(`WebSocket server is running on http://localhost:3003`);
 });

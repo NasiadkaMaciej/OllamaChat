@@ -1,0 +1,60 @@
+let refreshInterval;
+
+async function updateSystemInfo() {
+	try {
+		const memoryResponse = await fetch('https://ai.nasiadka.pl/api/memory');
+		const memoryData = await memoryResponse.json();
+
+		// Percentage for progress bar
+		const usedPercentage = (memoryData.used / memoryData.total) * 100;
+
+		// Update memory display with progress bar
+		document.getElementById('memory-info').innerHTML = `
+			<div class="memory-progress">
+				<div class="progress-bar" style="width: ${usedPercentage}%"></div>
+				<span class="used-memory">${memoryData.used} GB</span>
+				<span class="free-memory">${memoryData.free} GB</span>
+			</div>
+        `;
+
+		const modelsResponse = await fetch('https://ai.nasiadka.pl/api/models');
+		const models = await modelsResponse.json();
+
+		// ToDo: Implement loading and unloading models
+		// ToDo: Implement using models
+		// ToDo: Implement status of loaded models
+		const modelsList = models.map(model => `
+			<div class="model-item">
+				<div class="model-header">
+					<span class="model-name">${model.name}</span>
+					<span class="model-size">${model.size} GB</span>
+				</div>
+				<div class="buttons-wrapper">
+					<button class="use-button">Use</button>
+					<button class="load-button">Load</button>
+					<button class="unload-button">Unload</button>
+				</div>
+			</div>
+		`).join('');
+
+		document.getElementById('models-info').innerHTML = `
+			<div class="models-list">
+				${modelsList}
+			</div>
+		`;
+	} catch (error) {
+		console.error('Error updating system info:', error);
+	}
+}
+
+updateSystemInfo();
+
+// Update every 10 seconds
+refreshInterval = setInterval(updateSystemInfo, 10000);
+
+// Clean up on page unload
+window.addEventListener('unload', () => {
+	if (refreshInterval) {
+		clearInterval(refreshInterval);
+	}
+});
