@@ -82,6 +82,9 @@ button {
 #chat-container .sessions-container .session-item:hover {
   background-color: #e6e6e6;
 }
+#chat-container .sessions-container .session-item.active {
+  background-color: #e6e6e6;
+}
 #chat-container .sessions-container .session-item .session-name {
   flex-basis: 70%;
   word-break: break-all;

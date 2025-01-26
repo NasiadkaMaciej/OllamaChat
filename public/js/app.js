@@ -27,7 +27,7 @@ async function typeNextWord() {
 		for (const char of word) {
 			if (!currentMessageElement) return;
 			currentMessageElement.textContent += char;
-			console.log(currentModelSize);
+			// ToDo: Check how it behaves when GPU arrives
 			const timeout = parseInt(currentModelSize) * 2;
 			console.log(timeout);
 			await new Promise(resolve => setTimeout(resolve, timeout));
@@ -93,6 +93,7 @@ function appendMessage(role, message, done = false, animate = false) {
 function renderSessionItem(sessionId, sessionName) {
 	const sessionElement = document.createElement('div');
 	sessionElement.classList.add('session-item');
+	sessionElement.setAttribute('data-session-id', sessionId);
 
 	const sessionNameElement = document.createElement('span');
 	sessionNameElement.textContent = sessionName;
@@ -158,7 +159,14 @@ function createNewSession(callback) {
 function openSession(sessionId) {
 	stopCurrentResponse();
 	currentSessionId = sessionId;
+	setCookie('lastOpenedSession', sessionId, 1);
 	socket.emit('session:open', sessionId);
+
+	// Highlight active session
+	const sessionItems = document.querySelectorAll('.session-item');
+	sessionItems.forEach(item => item.classList.remove('active'));
+	const activeSessionItem = document.querySelector(`.session-item[data-session-id="${sessionId}"]`);
+	if (activeSessionItem) activeSessionItem.classList.add('active');
 }
 
 // Search sessions
@@ -231,6 +239,9 @@ socket.on('chat:message', (message, done, sessionId) => {
 socket.on('session:list', (sessions) => {
 	sessionsContainer.innerHTML = '';
 	sessions.forEach((s) => renderSessionItem(s.id, s.name));
+
+	const lastOpenedSession = getCookie('lastOpenedSession');
+	if (lastOpenedSession) openSession(lastOpenedSession);
 });
 
 // Load chat messages
@@ -251,6 +262,9 @@ socket.on('auth:loginSuccess', () => {
 	authContainer.style.display = 'none';
 	chatContainer.style.display = 'flex';
 	socket.emit('session:load');
+
+	const lastOpenedSession = getCookie('lastOpenedSession');
+	if (lastOpenedSession) openSession(lastOpenedSession);
 });
 
 socket.on('auth:success', (msg) => alert(msg));

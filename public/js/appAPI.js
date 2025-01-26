@@ -61,8 +61,12 @@ function selectModel(modelName) {
     currentModel = modelName;
     const selectedModel = models.find(model => model.name === modelName);
     if (selectedModel) currentModelSize = selectedModel.size; // Get size for speed calculation
+    setCookie('lastSelectedModel', modelName, 1);
     updateSystemInfo();
 }
+
+const lastSelectedModel = getCookie('lastSelectedModel');
+if (lastSelectedModel) currentModel = lastSelectedModel;
 
 updateSystemInfo();
 

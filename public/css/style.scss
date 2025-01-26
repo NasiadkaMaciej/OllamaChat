@@ -132,6 +132,10 @@ button {
 		.session-item {
 			@include list-item;
 
+			&.active {
+				background-color: $background-light;
+			}
+
 			.session-name {
 				flex-basis: 70%;
 				word-break: break-all;
