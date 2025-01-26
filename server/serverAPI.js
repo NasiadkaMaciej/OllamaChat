@@ -1,9 +1,11 @@
 const express = require('express');
 const axios = require('axios');
 const os = require('os');
+const bodyParser = require('body-parser');
 const app = express();
 const router = express.Router();
 
+app.use(bodyParser.json());
 app.use('/api', router);
 
 router.get('/memory', (req, res) => {
@@ -13,10 +15,10 @@ router.get('/memory', (req, res) => {
 		const freeMemory = os.freemem();
 		const usedMemory = totalMemory - freeMemory;
 
-		res.json({
+		res.status(200).json({
 			total: Math.round(totalMemory / 1024 / 1024 / 1024), // Needed for progress bar
-			free: Math.round(freeMemory / 1024 / 1024 / 1024),
-			used: Math.round(usedMemory / 1024 / 1024 / 1024),
+			free: Math.floor(freeMemory / 1024 / 1024 / 1024),
+			used: Math.ceil(usedMemory / 1024 / 1024 / 1024),
 			timestamp: Date.now() // Prevent cache
 		});
 	} catch (error) {
@@ -51,10 +53,32 @@ router.get('/models', async (req, res) => {
 			timestamp: Date.now() // Prevent cache
 
 		}));
-		res.json(models);
+		res.status(200).json(models);
 	} catch (error) {
 		console.error('Error fetching models:', error);
 		res.status(500).json({ error: 'Failed to fetch models' });
+	}
+});
+
+router.post('/models/load', async (req, res) => {
+	const { model } = req.body;
+	try {
+		await axios.post('http://127.0.0.1:11434/api/generate', { model });
+		res.status(200).json({ message: 'Model loaded successfully' });
+	} catch (error) {
+		console.error('Error loading model:', error);
+		res.status(500).json({ error: 'Failed to load model' });
+	}
+});
+
+router.delete('/models/unload', async (req, res) => {
+	const { model } = req.body;
+	try {
+		await axios.post('http://127.0.0.1:11434/api/generate', { model, keep_alive: 0 });
+		res.status(200).json({ message: 'Model unloaded successfully' });
+	} catch (error) {
+		console.error('Error unloading model:', error);
+		res.status(500).json({ error: 'Failed to unload model' });
 	}
 });
 

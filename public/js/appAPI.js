@@ -41,8 +41,8 @@ async function updateSystemInfo() {
 							onclick="selectModel('${model.name}')"
 							${!model.isLoaded ? 'disabled' : ''}>Use</button>
 					${model.isLoaded
-				? `<button class="unload-button">Unload</button>`
-				: `<button class="load-button">Load</button>`
+				? `<button class="unload-button" onclick="unloadModel('${model.name}')">Unload</button>`
+				: `<button class="load-button" onclick="loadModel('${model.name}')">Load</button>`
 			}
 				</div>
 			</div>
@@ -55,6 +55,45 @@ async function updateSystemInfo() {
 		`;
 	} catch (error) {
 		console.error('Error updating system info:', error);
+	}
+}
+
+async function loadModel(modelName) {
+	try {
+		const response = await fetch('https://ai.nasiadka.pl/api/models/load', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ model: modelName })
+		});
+		const result = await response.json();
+		if (response.ok) {
+			console.log(result.message);
+			updateSystemInfo();
+		} else console.error(result.error);
+	} catch (error) {
+		console.error('Error loading model:', error);
+	}
+}
+
+
+async function unloadModel(modelName) {
+	try {
+		const response = await fetch('https://ai.nasiadka.pl/api/models/unload', {
+			method: 'delete',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ model: modelName })
+		});
+		const result = await response.json();
+		if (response.ok) {
+			console.log(result.message);
+			updateSystemInfo();
+		} else console.error(result.error);
+	} catch (error) {
+		console.error('Error unloading model:', error);
 	}
 }
 
@@ -71,8 +110,8 @@ if (lastSelectedModel) currentModel = lastSelectedModel;
 
 updateSystemInfo();
 
-// Update every 10 seconds
-refreshInterval = setInterval(updateSystemInfo, 10000);
+// Update every 5 seconds
+refreshInterval = setInterval(updateSystemInfo, 5000);
 
 // Clean up on page unload
 window.addEventListener('unload', () => {
