@@ -27,7 +27,10 @@ async function typeNextWord() {
 		for (const char of word) {
 			if (!currentMessageElement) return;
 			currentMessageElement.textContent += char;
-			await new Promise(resolve => setTimeout(resolve, 50));
+			console.log(currentModelSize);
+			const timeout = parseInt(currentModelSize) * 2;
+			console.log(timeout);
+			await new Promise(resolve => setTimeout(resolve, timeout));
 		}
 	}
 	isTyping = false;

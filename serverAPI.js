@@ -32,8 +32,8 @@ async function getLoadedModels() {
 
 // Get available AI models
 router.get('/models', async (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 	try {
-		res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 		const [tagsResponse, loadedModelNames] = await Promise.all([
 			axios.get('http://127.0.0.1:11434/api/tags'),
 			getLoadedModels()
@@ -53,10 +53,8 @@ router.get('/models', async (req, res) => {
 	}
 });
 
-// ToDo: Loaded models
 // ToDo: Storing favorites?
 // ToDo: Search models?
-// ToDo: Renaming models?
 // ToDo: Loading and unloading models
 // ToDo: Status of loaded models
 // ToDo: Using models

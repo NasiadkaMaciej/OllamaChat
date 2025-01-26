@@ -1,5 +1,7 @@
 let refreshInterval;
 let currentModel = 'qwen2.5-coder:32b'; // Default model
+let currentModelSize = 0;
+let models = [];
 
 async function updateSystemInfo() {
 	try {
@@ -19,7 +21,7 @@ async function updateSystemInfo() {
 		`;
 
 		const modelsResponse = await fetch('https://ai.nasiadka.pl/api/models');
-		const models = await modelsResponse.json();
+		models = await modelsResponse.json();
 		models.sort((a, b) => { // Sort loaded models first, then alphabetically
 			if (a.isLoaded === b.isLoaded)
 				return a.name.localeCompare(b.name);
@@ -27,8 +29,6 @@ async function updateSystemInfo() {
 		});
 
 		// ToDo: Implement loading and unloading models
-		// ToDo: Implement using models
-		// ToDo: Implement status of loaded models
 		const modelsList = models.map(model => `
 			<div class="model-item">
 				<div class="model-header">
@@ -58,8 +58,10 @@ async function updateSystemInfo() {
 }
 
 function selectModel(modelName) {
-	currentModel = modelName;
-	updateSystemInfo();
+    currentModel = modelName;
+    const selectedModel = models.find(model => model.name === modelName);
+    if (selectedModel) currentModelSize = selectedModel.size; // Get size for speed calculation
+    updateSystemInfo();
 }
 
 updateSystemInfo();
