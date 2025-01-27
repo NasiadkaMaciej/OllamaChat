@@ -63,22 +63,45 @@ router.get('/models', async (req, res) => {
 router.post('/models/load', async (req, res) => {
 	const { model } = req.body;
 	try {
-		await axios.post('http://127.0.0.1:11434/api/generate', { model });
-		res.status(200).json({ message: 'Model loaded successfully' });
+		const response = await axios.post('http://127.0.0.1:11434/api/generate', {
+			model // No prompt, just load the model
+		});
+
+		if (response.data.done && response.data.done_reason === 'load') {
+			res.status(200).json({
+				success: true,
+				message: 'Model loaded successfully'
+			});
+		} else throw new Error();
 	} catch (error) {
 		console.error('Error loading model:', error);
-		res.status(500).json({ error: 'Failed to load model' });
+		res.status(500).json({
+			success: false,
+			error: 'Failed to load model'
+		});
 	}
 });
 
 router.delete('/models/unload', async (req, res) => {
 	const { model } = req.body;
 	try {
-		await axios.post('http://127.0.0.1:11434/api/generate', { model, keep_alive: 0 });
-		res.status(200).json({ message: 'Model unloaded successfully' });
+		const response = await axios.post('http://127.0.0.1:11434/api/generate', {
+			model,
+			keep_alive: 0 // Kill the model
+		});
+
+		if (response.data.done && response.data.done_reason === 'unload') {
+			res.status(200).json({
+				success: true,
+				message: 'Model unloaded successfully'
+			});
+		} else throw new Error();
 	} catch (error) {
-		console.error('Error unloading model:', error);
-		res.status(500).json({ error: 'Failed to unload model' });
+		console.error('Error loading model:', error);
+		res.status(500).json({
+			success: false,
+			error: 'Failed to unload model'
+		});
 	}
 });
 

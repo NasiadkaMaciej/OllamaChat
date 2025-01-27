@@ -2,6 +2,7 @@ let refreshInterval;
 let currentModel = 'qwen2.5-coder:32b'; // Default model
 let currentModelSize = 0;
 let models = [];
+const loadingModels = new Set();
 
 async function updateSystemInfo() {
 	try {
@@ -28,7 +29,6 @@ async function updateSystemInfo() {
 			return b.isLoaded - a.isLoaded;
 		});
 
-		// ToDo: Implement loading and unloading models
 		// ToDo: No "Use" and "Load" buttons. Just status and action depending on it
 		const modelsList = models.map(model => `
 			<div class="model-item">
@@ -39,11 +39,14 @@ async function updateSystemInfo() {
 				<div class="buttons-wrapper">
 					<button class="use-button ${model.name === currentModel ? 'selected' : ''}" 
 							onclick="selectModel('${model.name}')"
-							${!model.isLoaded ? 'disabled' : ''}>Use</button>
-					${model.isLoaded
-				? `<button class="unload-button" onclick="unloadModel('${model.name}')">Unload</button>`
-				: `<button class="load-button" onclick="loadModel('${model.name}')">Load</button>`
-			}
+							${!model.isLoaded || loadingModels.has(model.name) ? 'disabled' : ''}>
+						Use
+					</button>
+					<button class="${model.isLoaded ? 'unload-button' : 'load-button'}" 
+							onclick="${model.isLoaded ? 'unloadModel' : 'loadModel'}('${model.name}')"
+							${loadingModels.has(model.name) ? 'disabled' : ''}>
+						${model.isLoaded ? 'Unload' : 'Load'}
+					</button>
 				</div>
 			</div>
 		`).join('');
@@ -60,6 +63,9 @@ async function updateSystemInfo() {
 
 async function loadModel(modelName) {
 	try {
+		loadingModels.add(modelName);
+		updateSystemInfo();
+
 		const response = await fetch('https://ai.nasiadka.pl/api/models/load', {
 			method: 'POST',
 			headers: {
@@ -67,33 +73,51 @@ async function loadModel(modelName) {
 			},
 			body: JSON.stringify({ model: modelName })
 		});
+
 		const result = await response.json();
-		if (response.ok) {
-			console.log(result.message);
-			updateSystemInfo();
-		} else console.error(result.error);
+
+		// Only mark as loaded if we get success response
+		if (result.success) {
+			const modelIndex = models.findIndex(m => m.name === modelName);
+			if (modelIndex >= 0) models[modelIndex].isLoaded = true;
+			showToast('Model loaded successfully', false);
+		} else 	throw new Error(result.error || 'Failed to load model');
 	} catch (error) {
 		console.error('Error loading model:', error);
+		showToast(error.message || 'Failed to load model', true);
+	} finally {
+		loadingModels.delete(modelName);
+		updateSystemInfo();
 	}
 }
 
 
 async function unloadModel(modelName) {
 	try {
+		loadingModels.add(modelName);
+		updateSystemInfo();
+
 		const response = await fetch('https://ai.nasiadka.pl/api/models/unload', {
-			method: 'delete',
+			method: 'DELETE',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ model: modelName })
 		});
+
 		const result = await response.json();
-		if (response.ok) {
-			console.log(result.message);
-			updateSystemInfo();
-		} else console.error(result.error);
+
+		if (result.success) {
+			const modelIndex = models.findIndex(m => m.name === modelName);
+			if (modelIndex >= 0) models[modelIndex].isLoaded = false;
+			showToast('Model unloaded successfully', false);
+		} else throw new Error(result.error || 'Failed to unload model');
 	} catch (error) {
 		console.error('Error unloading model:', error);
+		showToast(error.message || 'Failed to unload model', true);
+	} finally {
+		loadingModels.delete(modelName);
+		updateSystemInfo();
 	}
 }
 
@@ -110,8 +134,8 @@ if (lastSelectedModel) currentModel = lastSelectedModel;
 
 updateSystemInfo();
 
-// Update every 5 seconds
-refreshInterval = setInterval(updateSystemInfo, 5000);
+// Update every 3 seconds
+refreshInterval = setInterval(updateSystemInfo, 3000);
 
 // Clean up on page unload
 window.addEventListener('unload', () => {
