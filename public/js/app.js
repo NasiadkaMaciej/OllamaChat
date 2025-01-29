@@ -258,6 +258,7 @@ socket.on('session:created', (sessionId, sessionName) => {
 
 // Authentication handlers
 socket.on('auth:loginSuccess', () => {
+	setCookie('username', document.getElementById('username').value);
 	authContainer.style.display = 'none';
 	chatContainer.style.display = 'flex';
 	socket.emit('session:load');

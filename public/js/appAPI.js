@@ -71,7 +71,10 @@ async function loadModel(modelName) {
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ model: modelName })
+			body: JSON.stringify({
+				model: modelName,
+				username: getCookie('username')
+			})
 		});
 
 		const result = await response.json();
@@ -81,7 +84,7 @@ async function loadModel(modelName) {
 			const modelIndex = models.findIndex(m => m.name === modelName);
 			if (modelIndex >= 0) models[modelIndex].isLoaded = true;
 			showToast('Model loaded successfully', false);
-		} else 	throw new Error(result.error || 'Failed to load model');
+		} else throw new Error(result.error || 'Failed to load model');
 	} catch (error) {
 		console.error('Error loading model:', error);
 		showToast(error.message || 'Failed to load model', true);
@@ -102,7 +105,10 @@ async function unloadModel(modelName) {
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ model: modelName })
+			body: JSON.stringify({
+				model: modelName,
+				username: getCookie('username')
+			})
 		});
 
 		const result = await response.json();

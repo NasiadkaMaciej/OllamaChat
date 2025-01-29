@@ -1,14 +1,13 @@
 const express = require('express');
 const axios = require('axios');
+const { checkPrivileges } = require('../services/auth');
+const config = require('../config/config');
 const os = require('os');
-const bodyParser = require('body-parser');
-const app = express();
+const { getLoadedModels } = require('../services/services');
+
 const router = express.Router();
 
-app.use(bodyParser.json());
-app.use('/api', router);
-
-router.get('/memory', (req, res) => {
+router.get('/memory', async (req, res) => {
 	try {
 		res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 		const totalMemory = os.totalmem();
@@ -16,10 +15,10 @@ router.get('/memory', (req, res) => {
 		const usedMemory = totalMemory - freeMemory;
 
 		res.status(200).json({
-			total: Math.round(totalMemory / 1024 / 1024 / 1024), // Needed for progress bar
+			total: Math.round(totalMemory / 1024 / 1024 / 1024),
 			free: Math.floor(freeMemory / 1024 / 1024 / 1024),
 			used: Math.ceil(usedMemory / 1024 / 1024 / 1024),
-			timestamp: Date.now() // Prevent cache
+			timestamp: Date.now()
 		});
 	} catch (error) {
 		console.error('Error fetching memory info:', error);
@@ -27,22 +26,11 @@ router.get('/memory', (req, res) => {
 	}
 });
 
-async function getLoadedModels() {
-	try {
-		const response = await axios.get('http://127.0.0.1:11434/api/ps');
-		return response.data.models.map(model => model.name);
-	} catch (error) {
-		console.error('Error fetching loaded models:', error);
-		throw new Error('Failed to fetch loaded models');
-	}
-}
-
-// Get available AI models
 router.get('/models', async (req, res) => {
-	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 	try {
+		res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 		const [tagsResponse, loadedModelNames] = await Promise.all([
-			axios.get('http://127.0.0.1:11434/api/tags'),
+			axios.get(`${config.OLLAMA_API_URL}/tags`),
 			getLoadedModels()
 		]);
 
@@ -50,8 +38,7 @@ router.get('/models', async (req, res) => {
 			name: model.name,
 			size: Math.round(model.size / 1024 / 1024 / 1024 * 100) / 100,
 			isLoaded: loadedModelNames.includes(model.name),
-			timestamp: Date.now() // Prevent cache
-
+			timestamp: Date.now()
 		}));
 		res.status(200).json(models);
 	} catch (error) {
@@ -61,7 +48,13 @@ router.get('/models', async (req, res) => {
 });
 
 router.post('/models/load', async (req, res) => {
-	const { model } = req.body;
+	const { model, username } = req.body;
+	if (!await checkPrivileges(username)) {
+		return res.status(403).json({
+			success: false,
+			error: 'You do not have privileges to load models'
+		});
+	}
 	try {
 		const response = await axios.post('http://127.0.0.1:11434/api/generate', {
 			model // No prompt, just load the model
@@ -83,7 +76,13 @@ router.post('/models/load', async (req, res) => {
 });
 
 router.delete('/models/unload', async (req, res) => {
-	const { model } = req.body;
+	const { model, username } = req.body;
+	if (!await checkPrivileges(username)) {
+		return res.status(403).json({
+			success: false,
+			error: 'You do not have privileges to unload models'
+		});
+	}
 	try {
 		const response = await axios.post('http://127.0.0.1:11434/api/generate', {
 			model,
@@ -107,10 +106,6 @@ router.delete('/models/unload', async (req, res) => {
 
 // ToDo: Storing favorites?
 // ToDo: Search models?
-// ToDo: Loading and unloading models
-// ToDo: Status of loaded models
-// ToDo: Using models
 
-app.listen(3002, () => {
-	console.log('API Server is running on http://localhost:3002');
-});
+
+module.exports = router;

@@ -11,3 +11,6 @@ Handle errors?
 Move code to new files 
 RWD 
 Add logout button 
+Sessions
+async generateSessionName?
+Cleanup
