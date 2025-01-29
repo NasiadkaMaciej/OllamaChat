@@ -3,7 +3,7 @@ const axios = require('axios');
 const { checkPrivileges } = require('../services/auth');
 const config = require('../config/config');
 const os = require('os');
-const { getLoadedModels } = require('../services/services');
+const { getLoadedModels } = require('../models');
 
 const router = express.Router();
 

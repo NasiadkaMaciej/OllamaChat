@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user');
 const axios = require('axios');
 const activeResponses = {};
-const { generateResponse, generateSessionName, checkIfModelLoaded } = require('../services/services');
+const { generateSessionName, checkIfModelLoaded } = require('../services/services');
 const config = require('../config/config');
 
 function initializeSocketHandlers(io) {

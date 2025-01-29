@@ -1,17 +1,7 @@
 const axios = require('axios');
-const os = require('os');
 const config = require('../config/config');
 const { v4: uuidv4 } = require('uuid');
-
-async function getLoadedModels() {
-	try {
-		const response = await axios.get(`${config.OLLAMA_API_URL}/ps`);
-		return response.data.models.map(model => model.name);
-	} catch (error) {
-		console.error('Error fetching loaded models:', error);
-		throw new Error('Failed to fetch loaded models');
-	}
-}
+const { getLoadedModels } = require('../models');
 
 async function generateSessionName(message) {
 	try {
@@ -30,15 +20,6 @@ async function generateSessionName(message) {
 		console.error('Error generating session name:', error);
 		return uuidv4(); // Fallback to UUID if generation fails
 	}
-}
-
-function checkIfLoggedIn(userId, socket) {
-	// ToDo: Cookies
-	if (!userId) {
-		socket.emit('loginFail', 'Not logged in.');
-		return false;
-	}
-	return true;
 }
 
 async function generateResponse(message, sessionId, modelName, userId) {
@@ -67,6 +48,5 @@ module.exports = {
 	getLoadedModels,
 	generateSessionName,
 	generateResponse,
-	checkIfLoggedIn,
 	checkIfModelLoaded
 };

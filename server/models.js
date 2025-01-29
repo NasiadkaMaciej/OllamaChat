@@ -1,12 +1,7 @@
 const axios = require('axios');
-const config = require('./config');
+const config = require('./config/config');
 
 class ModelManager {
-	static async getLoadedModels() {
-		const response = await axios.get('http://127.0.0.1:11434/api/ps');
-		return response.data.models.map(model => model.name);
-	}
-
 	static async listModels() {
 		const [tagsResponse, loadedModelNames] = await Promise.all([
 			axios.get('http://127.0.0.1:11434/api/tags'),
