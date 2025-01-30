@@ -116,6 +116,7 @@ button {
 
 	.sessions-container {
 		@include side-panel;
+		max-width: 350px;
 		border-right: 1px solid $border-color;
 
 		.search-container {
@@ -169,6 +170,7 @@ button {
 	.right-panel {
 		@include side-panel;
 		width: 20%;
+		max-width: 300px;
 		border-left: 1px solid $border-color;
 
 		.memory-progress {

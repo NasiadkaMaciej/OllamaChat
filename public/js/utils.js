@@ -1,5 +1,3 @@
-// ToDo: Move more code here
-
 function setCookie(name, value, hours = 1) {
 	const expires = new Date(Date.now() + (1000 * 60 * 60 * hours)).toUTCString();
 	document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/';
