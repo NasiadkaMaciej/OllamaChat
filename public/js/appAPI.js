@@ -6,7 +6,7 @@ const loadingModels = new Set();
 
 async function updateSystemInfo() {
 	try {
-		const memoryResponse = await fetch('https://ai.nasiadka.pl/api/memory');
+		const memoryResponse = await fetch('/api/memory');
 		const memoryData = await memoryResponse.json();
 
 		// Percentage for progress bar
@@ -21,7 +21,7 @@ async function updateSystemInfo() {
 			</div>
 		`;
 
-		const modelsResponse = await fetch('https://ai.nasiadka.pl/api/models');
+		const modelsResponse = await fetch('/api/models');
 		models = await modelsResponse.json();
 		models.sort((a, b) => { // Sort loaded models first, then alphabetically
 			if (a.isLoaded === b.isLoaded)
@@ -66,7 +66,7 @@ async function loadModel(modelName) {
 		loadingModels.add(modelName);
 		updateSystemInfo();
 
-		const response = await fetch('https://ai.nasiadka.pl/api/models/load', {
+		const response = await fetch('/api/models/load', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

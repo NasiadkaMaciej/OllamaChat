@@ -1,10 +1,9 @@
 const express = require('express');
 const axios = require('axios');
-const { checkPrivileges } = require('../services/auth');
 const config = require('../config/config');
 const os = require('os');
-const { getLoadedModels } = require('../models');
-
+const AuthService = require('../services/AuthService');
+const ModelService = require('../services/ModelService');
 const router = express.Router();
 
 router.get('/memory', async (req, res) => {
@@ -26,12 +25,13 @@ router.get('/memory', async (req, res) => {
 	}
 });
 
+// ToDo: Refactor to use ModelService
 router.get('/models', async (req, res) => {
 	try {
 		res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 		const [tagsResponse, loadedModelNames] = await Promise.all([
 			axios.get(`${config.OLLAMA_API_URL}/tags`),
-			getLoadedModels()
+			ModelService.getLoadedModels()
 		]);
 
 		const models = tagsResponse.data.models.map(model => ({
@@ -49,23 +49,18 @@ router.get('/models', async (req, res) => {
 
 router.post('/models/load', async (req, res) => {
 	const { model, username } = req.body;
-	if (!await checkPrivileges(username)) {
+	if (!await AuthService.checkPrivileges(username)) {
 		return res.status(403).json({
 			success: false,
 			error: 'You do not have privileges to load models'
 		});
 	}
 	try {
-		const response = await axios.post('http://127.0.0.1:11434/api/generate', {
-			model // No prompt, just load the model
+		await ModelService.loadModel(model);
+		res.status(200).json({
+			success: true,
+			message: 'Model loaded successfully'
 		});
-
-		if (response.data.done && response.data.done_reason === 'load') {
-			res.status(200).json({
-				success: true,
-				message: 'Model loaded successfully'
-			});
-		} else throw new Error();
 	} catch (error) {
 		console.error('Error loading model:', error);
 		res.status(500).json({
@@ -77,26 +72,20 @@ router.post('/models/load', async (req, res) => {
 
 router.delete('/models/unload', async (req, res) => {
 	const { model, username } = req.body;
-	if (!await checkPrivileges(username)) {
+	if (!await AuthService.checkPrivileges(username)) {
 		return res.status(403).json({
 			success: false,
 			error: 'You do not have privileges to unload models'
 		});
 	}
 	try {
-		const response = await axios.post('http://127.0.0.1:11434/api/generate', {
-			model,
-			keep_alive: 0 // Kill the model
+		await ModelService.unloadModel(model);
+		res.status(200).json({
+			success: true,
+			message: 'Model unloaded successfully'
 		});
-
-		if (response.data.done && response.data.done_reason === 'unload') {
-			res.status(200).json({
-				success: true,
-				message: 'Model unloaded successfully'
-			});
-		} else throw new Error();
 	} catch (error) {
-		console.error('Error loading model:', error);
+		console.error('Error unloading model:', error);
 		res.status(500).json({
 			success: false,
 			error: 'Failed to unload model'

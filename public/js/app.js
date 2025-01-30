@@ -253,6 +253,7 @@ socket.on('chat:history', (messages) => {
 
 socket.on('session:created', (sessionId, sessionName) => {
 	currentSessionId = sessionId;
+	socket.emit('session:load');
 	renderSessionItem(sessionId, sessionName);
 });
 
@@ -262,9 +263,6 @@ socket.on('auth:loginSuccess', () => {
 	authContainer.style.display = 'none';
 	chatContainer.style.display = 'flex';
 	socket.emit('session:load');
-
-	const lastOpenedSession = getCookie('lastOpenedSession');
-	if (lastOpenedSession) openSession(lastOpenedSession);
 });
 
 socket.on('auth:success', (msg) => showToast(msg, false));

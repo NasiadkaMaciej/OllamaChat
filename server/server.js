@@ -1,25 +1,30 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
-const { initializeMiddleware } = require('./utils/middleware');
-const { initializeSocketHandlers } = require('./socket/handlers.js');
-const { connectDatabase } = require('./utils/database');
-const apiRoutes = require('./routes/api');
+const { Server } = require('socket.io');
 const config = require('./config/config');
+const { connectDatabase } = require('./utils/Database');
+const SocketManager = require('./socket/SocketManager');
+const apiRouter = require('./routes/api');
+const { initializeMiddleware } = require('./utils/middleware');
 
 async function startServer() {
 	const app = express();
 	const server = http.createServer(app);
-	const io = socketIo(server);
+    const io = new Server(server, {
+        transports: ['websocket', 'polling'],
+        cookie: true
+    });
+
+	initializeMiddleware(app, io);
+
+	app.use('/api', apiRouter);
 
 	await connectDatabase();
 
-	initializeMiddleware(app, io);
-	app.use('/api', apiRoutes);
-	initializeSocketHandlers(io);
+	SocketManager.initialize(io);
 
 	server.listen(config.PORT, () => {
-		console.log(`WebSocket server is running on http://localhost:${config.PORT}`);
+		console.log(`Server is running on http://localhost:${config.PORT}`);
 	});
 }
 
