@@ -2,6 +2,7 @@ export class Chat {
 	constructor(socket, ui, modelManager) {
 		this.socket = socket;
 		this.ui = ui;
+		this.outputContainer = this.ui.outputContainer;
 		this.wordQueue = [];
 		this.isTyping = false;
 		this.currentMessageElement = null;
