@@ -63,6 +63,7 @@ export class UI {
 	}
 
 	openSession(sessionId) {
+		window.app.chat.stopCurrentResponse()
 		this.currentSessionId = sessionId;
 		setCookie('lastOpenedSession', sessionId);
 		this.socket.emit('session:open', sessionId);
@@ -79,6 +80,8 @@ export class UI {
 	}
 
 	clearSession() {
+		// Stop any active response before clearing
+		window.app.chat.stopCurrentResponse();
 		this.currentSessionId = null;
 		this.outputContainer.innerHTML = '';
 		this.highlightActiveSession(null);
@@ -86,6 +89,7 @@ export class UI {
 	}
 
 	createNewSession(callback) {
+		window.app.chat.stopCurrentResponse();
 		this.clearSession();
 		this.socket.emit('session:create');
 		this.socket.once('session:created', sessionId => {
@@ -101,6 +105,7 @@ export class UI {
 	bindButtons() {
 		// Clear button
 		document.querySelector('.clearButton').addEventListener('click', () => {
+			window.app.chat.stopCurrentResponse();
 			this.clearSession();
 			this.outputContainer.innerHTML = '';
 		});

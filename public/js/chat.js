@@ -28,7 +28,7 @@ export class Chat {
 		});
 
 		this.socket.on('chat:history', messages => {
-			this.ui.clearOutput();
+			this.outputContainer.innerHTML = '';
 			messages.forEach(msg => this.appendMessage(msg.role, msg.content));
 		});
 		document.querySelector('.stopButton').addEventListener('click', () => {
