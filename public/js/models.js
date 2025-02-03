@@ -153,6 +153,7 @@ export class ModelManager {
 		}
 	}
 
+	// After login, set the last selected model from cookie
 	selectModel(modelName) {
 		this.currentModel = modelName;
 		const selectedModel = this.models.find(model => model.name === modelName);

@@ -30,7 +30,7 @@ class ChatService {
 				model: modelName,
 				prompt: `Create a concise title for the AI conversation based on the topic below.
 						Most importantly, only include the title, absolutely nothing else.
-						Don't answer the question, just create a title for this message ${message}`,
+						Don't answer the question, just create a title for this message: ${message}`,
 				stream: false
 			});
 			return response.data.response.trim().replace(/"/g, '').trim();

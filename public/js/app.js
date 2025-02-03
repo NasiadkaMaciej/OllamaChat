@@ -4,6 +4,7 @@ import { SessionManager } from './session.js';
 import { UI } from './ui.js';
 import { ModelManager } from './models.js';
 
+// Main application class that orchestrates UI, authentication, sessions, models and chat functionality
 class App {
 	constructor() {
 		window.app = this;
