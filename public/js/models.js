@@ -102,6 +102,7 @@ export class ModelManager {
 				body: JSON.stringify({ model: modelName }),
 				credentials: 'include'
 			});
+			if (response.status === 403) throw new Error('You are not authorized to load models');
 			if (!response.ok) throw new Error('Failed to load model');
 
 			const modelIndex = this.models.findIndex(m => m.name === modelName);
@@ -127,6 +128,7 @@ export class ModelManager {
 				body: JSON.stringify({ model: modelName }),
 				credentials: 'include'
 			});
+			if (response.status === 403) throw new Error('You are not authorized to unload models');
 			if (!response.ok) throw new Error('Failed to unload model');
 
 			const modelIndex = this.models.findIndex(m => m.name === modelName);
