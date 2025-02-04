@@ -61,7 +61,7 @@ class SessionHandler {
 		try {
 			const session = await Session.findOne({
 				_id: sessionId,
-				userId: socket.request.session.user
+				userId: socket.user.id
 			});
 			if (!session || session.messages.length === 0) return;
 
@@ -80,7 +80,7 @@ class SessionHandler {
 	static async handleSearch(socket, query) {
 		try {
 			const sessions = await Session.find({
-				userId: socket.request.session.user,
+				userId: socket.user.id,
 				'messages.content': { $regex: query, $options: 'i' }
 			}).sort({ updatedAt: -1 });
 
@@ -98,7 +98,7 @@ class SessionHandler {
 		try {
 			await Session.deleteOne({
 				_id: sessionId,
-				userId: socket.request.session.user
+				userId: socket.user.id
 			});
 			await this.handleList(socket);
 		} catch (error) {

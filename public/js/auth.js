@@ -24,6 +24,19 @@ export class Auth {
 		return true;
 	}
 
+	validateInputsEmail(username, password, email) {
+		if (!this.validateInputs(username, password)) return false;
+		if (!email) {
+			this.ui.showToast('Email is required.');
+			return false;
+		}
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			this.ui.showToast('Please enter a valid email address.');
+			return false;
+		}
+		return true;
+	}
 
 	async handleLogin(event) {
 		event.preventDefault();
@@ -56,10 +69,13 @@ export class Auth {
 	async handleRegister(event) {
 		event.preventDefault();
 		const username = document.getElementById('regUsername').value.trim();
+		const email = document.getElementById('regEmail').value.trim();
 		const password = document.getElementById('regPassword').value.trim();
 		const confirmPassword = document.getElementById('regConfirmPassword').value.trim();
 
-		if (!this.validateInputs(username, password)) return;
+		console.log(username, email, password, confirmPassword);
+
+		if (!this.validateInputsEmail(username, password, email)) return;
 		if (password !== confirmPassword) {
 			this.ui.showToast('Passwords do not match!');
 			return;
@@ -69,15 +85,16 @@ export class Auth {
 			const response = await fetch('/api/auth/register', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ username, password })
+				body: JSON.stringify({ username, password, email })
 			});
 
 			const data = await response.json();
 
 			if (response.ok) {
-				this.ui.showToast('Registration successful! Please log in', false);
+				this.ui.showToast('Registration successful! Please check your email to verify your account.', false);
 				// Clear registration form
 				document.getElementById('regUsername').value = '';
+				document.getElementById('regEmail').value = '';
 				document.getElementById('regPassword').value = '';
 				document.getElementById('regConfirmPassword').value = '';
 			} else this.ui.showToast(data.error || 'Registration failed');

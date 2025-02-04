@@ -7,3 +7,4 @@ Handle errors?
 RWD 
 async generateSessionName?
 Cleanup
+Add option to resend verification email 

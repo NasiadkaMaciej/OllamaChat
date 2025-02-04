@@ -5,11 +5,14 @@
     "body-parser": "^1.20.3",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
+    "nodemailer": "^6.10.0",
+    "path": "^0.12.7",
     "socket.io": "^4.8.1",
     "uuidv4": "^6.2.13"
   }

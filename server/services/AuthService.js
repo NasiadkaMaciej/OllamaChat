@@ -1,16 +1,45 @@
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const User = require('../models/User');
+const VerificationToken = require('../models/VerificationToken');
 const config = require('../config/config');
+const { sendVerificationEmail } = require('../utils/Email');
 
 class AuthService {
-	static async register(username, password) {
-		if (!username || !password) throw new Error('Username and password are required');
+	static async register(username, password, email) {
+		if (!username || !password || !email)
+			throw new Error('Username, password and email are required');
 
-		const existingUser = await User.findOne({ username });
+		const [existingUser, existingEmail] = await Promise.all([
+			User.findOne({ username }),
+			User.findOne({ email })
+		]);
+
 		if (existingUser) throw new Error('Username already taken');
+		if (existingEmail) throw new Error('Email already registered');
+		// ToDo: Forgot password?
 
 		const hashedPassword = await bcrypt.hash(password, 10);
-		return await User.create({ username, password: hashedPassword });
+		const user = await User.create({
+			username,
+			password: hashedPassword,
+			email,
+			isVerified: false
+		});
+
+		const verificationToken = crypto.randomBytes(32).toString('hex');
+		await VerificationToken.create({
+			userId: user._id,
+			token: verificationToken
+		});
+
+		await sendVerificationEmail(email, verificationToken);
+
+		return {
+			_id: user._id,
+			username: user.username,
+			email: user.email
+		};
 	}
 
 	static async login(username, password) {
@@ -22,10 +51,31 @@ class AuthService {
 		const isValid = await bcrypt.compare(password, user.password);
 		if (!isValid) throw new Error('Invalid credentials');
 
-		return { // Not just return user, to avoid sending password hash
+		if (!user.isVerified) throw new Error('Please verify your email before logging in');
+
+		return {
 			_id: user._id,
-			username: user.username
+			username: user.username,
+			email: user.email
 		};
+	}
+
+	static async verifyEmail(token) {
+		const verificationToken = await VerificationToken.findOne({ token });
+		if (!verificationToken) throw new Error('Invalid or expired verification token');
+
+		const user = await User.findById(verificationToken.userId);
+		if (!user) throw new Error('User not found');
+
+		await Promise.all([ // Update user and delete token
+			User.updateOne(
+				{ _id: verificationToken.userId },
+				{ isVerified: true }
+			),
+			VerificationToken.deleteOne({ _id: verificationToken._id })
+		]);
+
+		return true;
 	}
 
 	static async checkPrivileges(userId) {

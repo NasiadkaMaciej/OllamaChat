@@ -7,6 +7,7 @@ const ModelService = require('../services/ModelService');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const AuthMiddleware = require('../utils/Middleware');
+const path = require('path');
 
 router.get('/auth/verify', (req, res) => {
 	const token = req.cookies.token;
@@ -53,8 +54,8 @@ router.post('/auth/login', async (req, res) => {
 
 router.post('/auth/register', async (req, res) => {
 	try {
-		const { username, password } = req.body;
-		await AuthService.register(username, password);
+		const { username, password, email } = req.body;
+		await AuthService.register(username, password, email);
 		res.json({ message: 'Registration successful' });
 	} catch (error) {
 		res.status(400).json({ error: error.message });
@@ -64,6 +65,17 @@ router.post('/auth/register', async (req, res) => {
 router.post('/auth/logout', (req, res) => {
 	res.clearCookie('token');
 	res.json({ message: 'Logged out' });
+});
+
+router.get('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.query;
+        await AuthService.verifyEmail(token);        
+        res.sendFile(path.join(__dirname, '../../public/email-verified.html'));
+    } catch (error) {
+        console.error('Verification error:', error);
+		res.sendFile(path.join(__dirname, '../../public/email-failed.html'));
+    }
 });
 
 router.get('/memory', async (req, res) => {
@@ -85,7 +97,6 @@ router.get('/memory', async (req, res) => {
 	}
 });
 
-// ToDo: Refactor to use ModelService
 router.get('/models', async (req, res) => {
 	try {
 		res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
