@@ -12,4 +12,5 @@ module.exports = {
 		maxAge: 7 * 24 * 60 * 60 * 1000
 	},
 	ADMIN_USERNAME: 'Maciej',
+	SESSION_NAME_MODEL: 'llama3.2:latest'
 };

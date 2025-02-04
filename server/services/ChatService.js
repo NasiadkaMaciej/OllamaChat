@@ -14,13 +14,13 @@ class ChatService {
 			});
 			return response;
 		} catch (error) {
-			console.error('Error generating response:', error);
+			console.error('Error generating response:', error.message);
 			throw new Error('Failed to generate chat response');
 		}
 	}
 
 	static async generateSessionName(message) {
-		const modelName = 'llama3.2:latest';
+		const modelName = config.SESSION_NAME_MODEL;
 		try {
 			console.log("Generating session name");
 			const isLoaded = await ModelService.isModelLoaded(modelName);
@@ -35,7 +35,7 @@ class ChatService {
 			});
 			return response.data.response.trim().replace(/"/g, '').trim();
 		} catch (error) {
-			console.error('Error generating session name:', error);
+			console.error('Error generating session name:', error.message);
 			return 'New Conversation';
 		}
 	}

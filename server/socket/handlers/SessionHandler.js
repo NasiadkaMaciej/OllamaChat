@@ -11,7 +11,7 @@ class SessionHandler {
 			});
 			socket.emit('session:created', session._id, session.name);
 		} catch (error) {
-			console.error('Error in handleCreate:', error);
+			console.error('Error in handleCreate:', error.message);
 			socket.emit('error', 'Failed to create session');
 		}
 	}
@@ -25,7 +25,7 @@ class SessionHandler {
 			if (!session) throw new Error('Session not found');
 			socket.emit('chat:history', session.messages);
 		} catch (error) {
-			console.error('Error in handleOpen:', error);
+			console.error('Error in handleOpen:', error.message);
 			socket.emit('error', 'Failed to open session');
 		}
 	}
@@ -39,7 +39,7 @@ class SessionHandler {
 				name: s.name
 			})));
 		} catch (error) {
-			console.error('Error in handleList:', error);
+			console.error('Error in handleList:', error.message);
 			socket.emit('error', 'Failed to list sessions');
 		}
 	}
@@ -52,11 +52,11 @@ class SessionHandler {
 			);
 			await this.handleList(socket);
 		} catch (error) {
-			console.error('Error in handleRename:', error);
+			console.error('Error in handleRename:', error.message);
 			socket.emit('error', 'Failed to rename session');
 		}
 	}
-	
+
 	static async handleRegenerateTitle(socket, sessionId) {
 		try {
 			const session = await Session.findOne({
@@ -72,7 +72,7 @@ class SessionHandler {
 
 			await this.handleList(socket);
 		} catch (error) {
-			console.error('Error in handleRegenerateTitle:', error);
+			console.error('Error in handleRegenerateTitle:', error.message);
 			socket.emit('error', 'Failed to regenerate session title');
 		}
 	}
@@ -89,7 +89,7 @@ class SessionHandler {
 				name: s.name
 			})));
 		} catch (error) {
-			console.error('Search error:', error);
+			console.error('Errpr in handleSearch:', error.message);
 			socket.emit('error', 'Search failed');
 		}
 	}
@@ -102,7 +102,7 @@ class SessionHandler {
 			});
 			await this.handleList(socket);
 		} catch (error) {
-			console.error('Error in handleDelete:', error);
+			console.error('Error in handleDelete:', error.message);
 			socket.emit('error', 'Failed to delete session');
 		}
 	}

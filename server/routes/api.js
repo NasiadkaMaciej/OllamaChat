@@ -6,7 +6,7 @@ const AuthService = require('../services/AuthService');
 const ModelService = require('../services/ModelService');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const authMiddleware = require('../utils/middleware');
+const authMiddleware = require('../utils/Middleware');
 
 router.get('/auth/verify', (req, res) => {
 	const token = req.cookies.token;
@@ -41,7 +41,6 @@ router.post('/auth/login', async (req, res) => {
 		res.cookie('token', token, config.COOKIE_OPTIONS);
 
 		res.json({
-			success: true,
 			user: {
 				username: user.username,
 				_id: user._id
@@ -56,18 +55,15 @@ router.post('/auth/register', async (req, res) => {
 	try {
 		const { username, password } = req.body;
 		await AuthService.register(username, password);
-		res.json({
-			success: true,
-			message: 'Registration successful'
-		});
+		res.json({ message: 'Registration successful' });
 	} catch (error) {
-		res.status(400).json({ success: false, error: error.message });
+		res.status(400).json({ error: error.message });
 	}
 });
 
 router.post('/auth/logout', (req, res) => {
 	res.clearCookie('token');
-	res.json({ success: true });
+	res.json({ message: 'Logged out' });
 });
 
 router.get('/memory', async (req, res) => {
@@ -84,7 +80,7 @@ router.get('/memory', async (req, res) => {
 			timestamp: Date.now()
 		});
 	} catch (error) {
-		console.error('Error fetching memory info:', error);
+		console.error('Error fetching memory info:', error.message);
 		res.status(500).json({ error: 'Failed to fetch memory info' });
 	}
 });
@@ -106,59 +102,40 @@ router.get('/models', async (req, res) => {
 		}));
 		res.status(200).json(models);
 	} catch (error) {
-		console.error('Error fetching models:', error);
+		console.error('Error fetching models:', error.message);
 		res.status(500).json({ error: 'Failed to fetch models' });
 	}
 });
 
 router.post('/models/load', authMiddleware, async (req, res) => {
 	const { model } = req.body;
-	if (!await AuthService.checkPrivileges(req.user.id)) {
-		return res.status(403).json({
-			success: false,
-			error: 'You do not have privileges to load models'
-		});
-	}
+	if (!await AuthService.checkPrivileges(req.user.id))
+		return res.status(403).json({ error: 'You do not have privileges to load models' });
+
 	try {
 		await ModelService.loadModel(model);
-		res.status(200).json({
-			success: true,
-			message: 'Model loaded successfully'
-		});
+		res.status(200).json({ message: 'Model loaded successfully' });
 	} catch (error) {
-		console.error('Error loading model:', error);
-		res.status(500).json({
-			success: false,
-			error: 'Failed to load model'
-		});
+		console.error('Error loading model:', error.message);
+		res.status(500).json({ error: 'Failed to load model' });
 	}
 });
 
 router.delete('/models/unload', authMiddleware, async (req, res) => {
 	const { model } = req.body;
-	if (!await AuthService.checkPrivileges(req.user.id)) {
-		return res.status(403).json({
-			success: false,
-			error: 'You do not have privileges to unload models'
-		});
-	}
+	if (!await AuthService.checkPrivileges(req.user.id))
+		return res.status(403).json({ error: 'You do not have privileges to unload models' });
+
 	try {
 		await ModelService.unloadModel(model);
-		res.status(200).json({
-			success: true,
-			message: 'Model unloaded successfully'
-		});
+		res.status(200).json({ message: 'Model unloaded successfully' });
 	} catch (error) {
-		console.error('Error unloading model:', error);
-		res.status(500).json({
-			success: false,
-			error: 'Failed to unload model'
-		});
+		console.error('Error unloading model:', error.message);
+		res.status(500).json({ error: 'Failed to unload model' });
 	}
 });
 
 // ToDo: Storing favorites?
 // ToDo: Search models?
-
 
 module.exports = router;

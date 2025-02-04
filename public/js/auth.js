@@ -48,7 +48,7 @@ export class Auth {
 				await window.modelManager.initializeModel();
 			} else this.ui.showToast(data.error || 'Login failed');
 		} catch (error) {
-			console.error('Login error:', error);
+			console.error('Login error:', error.message);
 			this.ui.showToast('Network error occurred');
 		}
 	}
@@ -82,7 +82,7 @@ export class Auth {
 				document.getElementById('regConfirmPassword').value = '';
 			} else this.ui.showToast(data.error || 'Registration failed');
 		} catch (error) {
-			console.error('Registration error:', error);
+			console.error('Registration error:', error.message);
 			this.ui.showToast('Network error occurred');
 		}
 	}
@@ -100,7 +100,7 @@ export class Auth {
 				window.location.reload();
 			}
 		} catch (error) {
-			console.error('Logout error:', error);
+			console.error('Logout error:', error.message);
 			this.ui.showToast('Logout failed');
 		}
 	}
@@ -119,7 +119,7 @@ export class Auth {
 				this.socket.emit('session:load');
 			} else this.ui.showAuth();
 		} catch (error) {
-			console.error('Auth check failed:', error);
+			console.error('Auth check failed:', error.message);
 			this.ui.showAuth();
 		}
 	}

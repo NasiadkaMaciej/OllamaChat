@@ -38,7 +38,7 @@ class ChatHandler {
 					})));
 				}
 				catch (error) {
-					console.error('Error generating session name:', error);
+					console.error('Error generating session name:', error.message);
 				}
 				await session.save();
 			}
@@ -60,12 +60,12 @@ class ChatHandler {
 						}
 					}
 				} catch (error) {
-					console.error('Error processing response chunk:', error);
+					console.error('Error processing response chunk:', error.message);
 				}
 			});
 
 			response.data.on('error', (error) => {
-				console.error('Stream error:', error);
+				console.error('Stream error:', error.message);
 				this.socket.emit('error', 'Error in response stream');
 				this.activeResponses.delete(sessionId);
 			});
@@ -75,7 +75,7 @@ class ChatHandler {
 			});
 
 		} catch (error) {
-			console.error('Error handling message:', error);
+			console.error('Error handling message:', error.message);
 			this.socket.emit('error', 'Failed to generate response');
 		}
 	}

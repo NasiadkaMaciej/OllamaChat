@@ -30,7 +30,7 @@ export class ModelManager {
 			await this.updateMemoryInfo();
 			await this.updateModelsInfo();
 		} catch (error) {
-			console.error('Error updating system info:', error);
+			console.error('Error updating system info:', error.message);
 		}
 	}
 
@@ -102,17 +102,13 @@ export class ModelManager {
 				body: JSON.stringify({ model: modelName }),
 				credentials: 'include'
 			});
+			if (!response.ok) throw new Error('Failed to load model');
 
-			const result = await response.json();
-			if (result.success) {
-				const modelIndex = this.models.findIndex(m => m.name === modelName);
-				if (modelIndex >= 0) this.models[modelIndex].isLoaded = true;
-				this.ui.showToast('Model loaded successfully', false);
-			} else {
-				throw new Error(result.error || 'Failed to load model');
-			}
+			const modelIndex = this.models.findIndex(m => m.name === modelName);
+			if (modelIndex >= 0) this.models[modelIndex].isLoaded = true;
+			this.ui.showToast('Model loaded successfully', false);
 		} catch (error) {
-			console.error('Error loading model:', error);
+			console.error('Error loading model:', error.message);
 			this.ui.showToast(error.message || 'Failed to load model', true);
 		} finally {
 			this.loadingModels.delete(modelName);
@@ -131,17 +127,13 @@ export class ModelManager {
 				body: JSON.stringify({ model: modelName }),
 				credentials: 'include'
 			});
+			if (!response.ok) throw new Error('Failed to unload model');
 
-			const result = await response.json();
-			if (result.success) {
-				const modelIndex = this.models.findIndex(m => m.name === modelName);
-				if (modelIndex >= 0) this.models[modelIndex].isLoaded = false;
-				this.ui.showToast('Model unloaded successfully', false);
-			} else {
-				throw new Error(result.error || 'Failed to unload model');
-			}
+			const modelIndex = this.models.findIndex(m => m.name === modelName);
+			if (modelIndex >= 0) this.models[modelIndex].isLoaded = false;
+			this.ui.showToast('Model unloaded successfully', false);
 		} catch (error) {
-			console.error('Error unloading model:', error);
+			console.error('Error unloading model:', error.message);
 			this.ui.showToast(error.message || 'Failed to unload model', true);
 		} finally {
 			this.loadingModels.delete(modelName);
