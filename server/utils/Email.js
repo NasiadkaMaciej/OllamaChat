@@ -89,7 +89,7 @@ const styles = `
                     }`
 
 const sendVerificationEmail = async (email, token) => {
-	const verificationUrl = `https://ai.nasiadka.pl/api/verify-email/?token=${token}`;
+	const verificationUrl = `https://ai.nasiadka.pl/verify-email?token=${token}`;
 	const mailOptions = {
 		from: 'maciej@nasiadka.pl',
 		to: email,

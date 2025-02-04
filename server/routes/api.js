@@ -67,14 +67,13 @@ router.post('/auth/logout', (req, res) => {
 	res.json({ message: 'Logged out' });
 });
 
-router.get('/verify-email', async (req, res) => {
+router.post('/auth/verify-email', async (req, res) => {
 	try {
-		const { token } = req.query;
+		const { token } = req.body;
 		await AuthService.verifyEmail(token);
-		res.sendFile(path.join(__dirname, '../../public/email-verified.html'));
+		res.json({ message: 'Email verified successfully' });
 	} catch (error) {
-		console.error('Verification error:', error);
-		res.sendFile(path.join(__dirname, '../../public/email-failed.html'));
+		res.status(400).json({ error: error.message });
 	}
 });
 
