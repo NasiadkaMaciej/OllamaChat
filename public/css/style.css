@@ -158,18 +158,18 @@ button {
   background-color: #357a38;
   transform: translateY(2px);
 }
-#chat-container .sessions-container .logoutButton {
+#chat-container .sessions-container #logoutButton {
   margin-top: 0.5rem;
   background-color: #f44336;
   padding: 0.4rem 0.8rem;
   transition: all 0.3s ease;
 }
-#chat-container .sessions-container .logoutButton:hover {
+#chat-container .sessions-container #logoutButton:hover {
   background-color: #f22112;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
-#chat-container .sessions-container .logoutButton:active {
+#chat-container .sessions-container #logoutButton:active {
   background-color: #d2190b;
   transform: translateY(2px);
 }
@@ -401,6 +401,15 @@ button {
 #auth-container form button:active {
   background-color: #357a38;
   transform: translateY(2px);
+}
+#auth-container .forgot-password-link {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: #2196f3;
+  text-decoration: none;
+}
+#auth-container .forgot-password-link:hover {
+  text-decoration: underline;
 }
 
 .toast {

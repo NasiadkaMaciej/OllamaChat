@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const VerificationToken = require('../models/VerificationToken');
 const config = require('../config/config');
-const { sendVerificationEmail } = require('../utils/Email');
+const { sendVerificationEmail, sendResetEmail } = require('../utils/Email');
 
 class AuthService {
 	static async register(username, password, email) {
@@ -64,9 +64,6 @@ class AuthService {
 		const verificationToken = await VerificationToken.findOne({ token });
 		if (!verificationToken) throw new Error('Invalid or expired verification token');
 
-		const user = await User.findById(verificationToken.userId);
-		if (!user) throw new Error('User not found');
-
 		await Promise.all([ // Update user and delete token
 			User.updateOne(
 				{ _id: verificationToken.userId },
@@ -74,13 +71,38 @@ class AuthService {
 			),
 			VerificationToken.deleteOne({ _id: verificationToken._id })
 		]);
-
 		return true;
 	}
 
 	static async checkPrivileges(userId) {
 		const user = await User.findById(userId);
 		return user && user.username === config.ADMIN_USERNAME;
+	}
+
+	static async sendResetToken(email) {
+		const user = await User.findOne({ email });
+		if (!user) throw new Error('Email not found');
+
+		const resetToken = crypto.randomBytes(32).toString('hex');
+		await VerificationToken.create({
+			userId: user._id,
+			token: resetToken
+		});
+
+		await sendResetEmail(email, resetToken);
+	}
+
+	static async resetPassword(token, newPassword) {
+		const verificationToken = await VerificationToken.findOne({ token });
+		if (!verificationToken) throw new Error('Invalid token');
+
+		const hashedPassword = await bcrypt.hash(newPassword, 10);
+		await User.updateOne( // Update user and delete token
+			{ _id: verificationToken.userId },
+			{ password: hashedPassword }
+		);
+		await VerificationToken.deleteOne({ _id: verificationToken._id });
+		return true;
 	}
 }
 

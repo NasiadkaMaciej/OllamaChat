@@ -109,7 +109,7 @@ export class ModelManager {
 			this.ui.showToast('Model loaded successfully', false);
 		} catch (error) {
 			console.error('Error loading model:', error.message);
-			this.ui.showToast(error.message || 'Failed to load model', true);
+			this.ui.showToast(error.message || 'Failed to load model');
 		} finally {
 			this.loadingModels.delete(modelName);
 			this.updateSystemInfo();
@@ -134,7 +134,7 @@ export class ModelManager {
 			this.ui.showToast('Model unloaded successfully', false);
 		} catch (error) {
 			console.error('Error unloading model:', error.message);
-			this.ui.showToast(error.message || 'Failed to unload model', true);
+			this.ui.showToast(error.message || 'Failed to unload model');
 		} finally {
 			this.loadingModels.delete(modelName);
 			this.updateSystemInfo();

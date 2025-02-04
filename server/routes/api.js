@@ -68,14 +68,34 @@ router.post('/auth/logout', (req, res) => {
 });
 
 router.get('/verify-email', async (req, res) => {
-    try {
-        const { token } = req.query;
-        await AuthService.verifyEmail(token);        
-        res.sendFile(path.join(__dirname, '../../public/email-verified.html'));
-    } catch (error) {
-        console.error('Verification error:', error);
+	try {
+		const { token } = req.query;
+		await AuthService.verifyEmail(token);
+		res.sendFile(path.join(__dirname, '../../public/email-verified.html'));
+	} catch (error) {
+		console.error('Verification error:', error);
 		res.sendFile(path.join(__dirname, '../../public/email-failed.html'));
-    }
+	}
+});
+
+router.post('/auth/forgot-password', async (req, res) => {
+	try {
+		const { email } = req.body;
+		await AuthService.sendResetToken(email);
+		res.json({ message: 'Password reset email sent' });
+	} catch (error) {
+		res.status(400).json({ error: error.message });
+	}
+});
+
+router.put('/auth/reset-password', async (req, res) => {
+	try {
+		const { token, newPassword } = req.body;
+		await AuthService.resetPassword(token, newPassword);
+		res.json({ message: 'Password reset successful' });
+	} catch (error) {
+		res.status(400).json({ error: error.message });
+	}
 });
 
 router.get('/memory', async (req, res) => {

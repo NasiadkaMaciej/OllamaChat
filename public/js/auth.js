@@ -9,7 +9,8 @@ export class Auth {
 	bindEvents() { // Set up listeners for forms
 		document.getElementById('loginForm').addEventListener('submit', e => this.handleLogin(e));
 		document.getElementById('registerForm').addEventListener('submit', e => this.handleRegister(e));
-		document.querySelector('.logoutButton').addEventListener('click', () => this.handleLogout());
+		document.getElementById('logoutButton').addEventListener('click', () => this.handleLogout());
+		document.getElementById('forgotPasswordLink').addEventListener('click', e => this.handleForgotPasswordLink(e));
 	}
 
 	validateInputs(username, password) {
@@ -59,6 +60,7 @@ export class Auth {
 				this.ui.showChat();
 				if (!this.socket.connected) this.socket.connect();
 				await window.modelManager.initializeModel();
+				this.socket.emit('session:load');
 			} else this.ui.showToast(data.error || 'Login failed');
 		} catch (error) {
 			console.error('Login error:', error.message);
@@ -140,4 +142,29 @@ export class Auth {
 			this.ui.showAuth();
 		}
 	}
+
+	async handleForgotPassword(email) {
+		try {
+			const response = await fetch('/api/auth/forgot-password', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email })
+			});
+
+			const data = await response.json();
+
+			if (response.ok) this.ui.showToast('Password reset email sent', false);
+			else this.ui.showToast(data.error || 'Failed to send reset email');
+		} catch (error) {
+			console.error('Forgot password error:', error.message);
+			this.ui.showToast('Network error occurred');
+		}
+	}
+
+	async handleForgotPasswordLink(e) {
+		e.preventDefault();
+		const email = prompt('Enter your email address:');
+		if (email) this.handleForgotPassword(email);
+	};
+
 }
