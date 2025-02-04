@@ -15,25 +15,14 @@ async function verifyEmail() {
 		});
 
 		const data = await response.json();
-		const messageElement = document.getElementById('verificationMessage');
 
-		if (response.ok) {
-			showToast('Email verified successfully!', false);
-			messageElement.innerHTML += `
-                <button class="primary-button" onclick="window.location.href='/'">
-                    Go to Login
-                </button>
-            `;
-		} else {
-			showToast(data.error);
-			messageElement.innerHTML += `
-                <button class="primary-button" onclick="window.location.href='/'">
-                    Return to Login
-                </button>
-            `;
-		}
+		if (response.ok) showToast('Email verified successfully!', false);
+		else showToast(data.error);
+		setTimeout(() => window.location.href = '/', 2000);
 	} catch (error) {
+		console.log(error)
 		showToast('Verification failed. Please try again.');
+		setTimeout(() => window.location.href = '/', 2000);
 	}
 }
 
