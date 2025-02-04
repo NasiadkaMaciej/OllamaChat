@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
 
-const authMiddleware = async (req, res, next) => {
+const AuthMiddleware = async (req, res, next) => {
 	const token = req.cookies.token;
 	if (!token) return res.status(401).json({ error: 'No token provided' });
 
@@ -21,4 +21,4 @@ const authMiddleware = async (req, res, next) => {
 	}
 };
 
-module.exports = authMiddleware;
+module.exports = AuthMiddleware;

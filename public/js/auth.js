@@ -123,18 +123,4 @@ export class Auth {
 			this.ui.showAuth();
 		}
 	}
-
-	async getInitialSessions() {
-		return new Promise((resolve) => {
-			const timeout = setTimeout(() => resolve([]), 5000); // 5s timeout
-
-			this.socket.once('session:list', (sessions) => {
-				clearTimeout(timeout);
-				resolve(sessions);
-			});
-
-			this.socket.emit('session:load');
-		});
-	}
-
 }
