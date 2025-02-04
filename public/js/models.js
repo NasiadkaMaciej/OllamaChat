@@ -99,10 +99,8 @@ export class ModelManager {
 			const response = await fetch('/api/models/load', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					model: modelName,
-					username: getCookie('username')
-				})
+				body: JSON.stringify({ model: modelName }),
+				credentials: 'include'
 			});
 
 			const result = await response.json();
@@ -130,10 +128,8 @@ export class ModelManager {
 			const response = await fetch('/api/models/unload', {
 				method: 'DELETE',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					model: modelName,
-					username: getCookie('username')
-				})
+				body: JSON.stringify({ model: modelName }),
+				credentials: 'include'
 			});
 
 			const result = await response.json();

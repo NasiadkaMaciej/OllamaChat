@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
+const config = require('../config/config');
 
 class AuthService {
 	static async register(username, password) {
@@ -27,8 +28,9 @@ class AuthService {
 		};
 	}
 
-	static async checkPrivileges(username) {
-		return username === 'Maciej';
+	static async checkPrivileges(userId) {
+		const user = await User.findById(userId);
+		return user && user.username === config.ADMIN_USERNAME;
 	}
 }
 

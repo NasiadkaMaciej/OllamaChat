@@ -6,6 +6,7 @@ const AuthService = require('../services/AuthService');
 const ModelService = require('../services/ModelService');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const authMiddleware = require('../utils/middleware');
 
 router.get('/auth/verify', (req, res) => {
 	const token = req.cookies.token;
@@ -65,7 +66,7 @@ router.post('/auth/register', async (req, res) => {
 });
 
 router.post('/auth/logout', (req, res) => {
-	res.clearCookie('token', config.COOKIE_OPTIONS);
+	res.clearCookie('token');
 	res.json({ success: true });
 });
 
@@ -110,9 +111,9 @@ router.get('/models', async (req, res) => {
 	}
 });
 
-router.post('/models/load', async (req, res) => {
-	const { model, username } = req.body;
-	if (!await AuthService.checkPrivileges(username)) {
+router.post('/models/load', authMiddleware, async (req, res) => {
+	const { model } = req.body;
+	if (!await AuthService.checkPrivileges(req.user.id)) {
 		return res.status(403).json({
 			success: false,
 			error: 'You do not have privileges to load models'
@@ -133,9 +134,9 @@ router.post('/models/load', async (req, res) => {
 	}
 });
 
-router.delete('/models/unload', async (req, res) => {
-	const { model, username } = req.body;
-	if (!await AuthService.checkPrivileges(username)) {
+router.delete('/models/unload', authMiddleware, async (req, res) => {
+	const { model } = req.body;
+	if (!await AuthService.checkPrivileges(req.user.id)) {
 		return res.status(403).json({
 			success: false,
 			error: 'You do not have privileges to unload models'
