@@ -11,7 +11,10 @@ class ChatHandler {
 	async handleMessage(message, sessionId, modelName) {
 		console.log('Received message:', message);
 		try {
-			const session = await Session.findById(sessionId);
+			const session = await Session.findOne({
+				_id: sessionId,
+				userId: this.socket.user.id
+			  });
 			if (!session) throw new Error('Invalid session');
 
 			const isLoaded = await ModelService.isModelLoaded(modelName);

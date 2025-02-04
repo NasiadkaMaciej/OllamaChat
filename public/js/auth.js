@@ -3,15 +3,13 @@ export class Auth {
 		this.socket = socket;
 		this.ui = ui;
 		this.bindEvents();
+		this.checkAuthState();
 	}
 
-	bindEvents() { // Set up listeners for buttons and responses from the server
+	bindEvents() { // Set up listeners for forms
 		document.getElementById('loginForm').addEventListener('submit', e => this.handleLogin(e));
 		document.getElementById('registerForm').addEventListener('submit', e => this.handleRegister(e));
-
-		this.socket.on('auth:loginSuccess', () => this.onLoginSuccess());
-		this.socket.on('auth:success', msg => this.ui.showToast(msg, false));
-		this.socket.on('auth:failed', msg => this.ui.showToast(msg, true));
+		document.querySelector('.logoutButton').addEventListener('click', () => this.handleLogout());
 	}
 
 	validateInputs(username, password) {
@@ -26,15 +24,36 @@ export class Auth {
 		return true;
 	}
 
-	handleLogin(event) {
+
+	async handleLogin(event) {
 		event.preventDefault();
 		const username = document.getElementById('username').value.trim();
 		const password = document.getElementById('password').value.trim();
 		if (!this.validateInputs(username, password)) return;
-		this.socket.emit('auth:login', { username, password });
+
+		try {
+			const response = await fetch('/api/auth/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ username, password }),
+				credentials: 'include'
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				setCookie('username', data.user.username);
+				this.ui.showChat();
+				if (!this.socket.connected) this.socket.connect();
+				await window.modelManager.initializeModel();
+			} else this.ui.showToast(data.error || 'Login failed');
+		} catch (error) {
+			console.error('Login error:', error);
+			this.ui.showToast('Network error occurred');
+		}
 	}
 
-	handleRegister(event) {
+	async handleRegister(event) {
 		event.preventDefault();
 		const username = document.getElementById('regUsername').value.trim();
 		const password = document.getElementById('regPassword').value.trim();
@@ -45,15 +64,77 @@ export class Auth {
 			this.ui.showToast('Passwords do not match!');
 			return;
 		}
-		this.socket.emit('auth:register', { username, password });
+
+		try {
+			const response = await fetch('/api/auth/register', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ username, password })
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				this.ui.showToast('Registration successful! Please log in', false);
+				// Clear registration form
+				document.getElementById('regUsername').value = '';
+				document.getElementById('regPassword').value = '';
+				document.getElementById('regConfirmPassword').value = '';
+			} else this.ui.showToast(data.error || 'Registration failed');
+		} catch (error) {
+			console.error('Registration error:', error);
+			this.ui.showToast('Network error occurred');
+		}
 	}
 
-	onLoginSuccess() {
-		// ToDo: Correct session handling
-		// For now, username is stored in a cookie to check if user is authorized to load/unload models
-		const username = document.getElementById('username').value;
-		setCookie('username', username);
-		this.ui.showChat();
-		this.socket.emit('session:load');
+	async handleLogout() {
+		try {
+			const response = await fetch('/api/auth/logout', {
+				method: 'POST',
+				credentials: 'include'
+			});
+
+			if (response.ok) {
+				deleteCookie('token');
+				deleteCookie('username');
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error('Logout error:', error);
+			this.ui.showToast('Logout failed');
+		}
 	}
+
+	async checkAuthState() {
+		try {
+			const response = await fetch('/api/auth/verify', {
+				credentials: 'include'
+			});
+
+			const data = await response.json();
+
+			if (data.authenticated) {
+				setCookie('username', data.user.username);
+				this.ui.showChat();
+				this.socket.emit('session:load');
+			} else this.ui.showAuth();
+		} catch (error) {
+			console.error('Auth check failed:', error);
+			this.ui.showAuth();
+		}
+	}
+
+	async getInitialSessions() {
+		return new Promise((resolve) => {
+			const timeout = setTimeout(() => resolve([]), 5000); // 5s timeout
+
+			this.socket.once('session:list', (sessions) => {
+				clearTimeout(timeout);
+				resolve(sessions);
+			});
+
+			this.socket.emit('session:load');
+		});
+	}
+
 }

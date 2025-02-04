@@ -1,6 +1,12 @@
 function setCookie(name, value, hours = 1) {
-	const expires = new Date(Date.now() + (1000 * 60 * 60 * hours)).toUTCString();
-	document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/';
+	const options = {
+		path: '/',
+		secure: true,
+		sameSite: 'strict',
+		expires: new Date(Date.now() + (1000 * 60 * 60 * hours)).toUTCString()
+	}
+	document.cookie = `${name}=${encodeURIComponent(value)}; ` +
+		Object.entries(options).map(([k, v]) => `${k}=${v}`).join('; ');
 }
 
 function getCookie(name) {
@@ -11,7 +17,7 @@ function getCookie(name) {
 }
 
 function deleteCookie(name) {
-    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=strict`;
 }
 
 function createElement(tag, classNames = [], textContent = '', attributes = {}) {

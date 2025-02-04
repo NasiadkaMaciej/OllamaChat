@@ -2,11 +2,10 @@ const Session = require('../../models/Session');
 const ChatService = require('../../services/ChatService');
 
 class SessionHandler {
-
 	static async handleCreate(socket) {
 		try {
 			const session = await Session.create({
-				userId: socket.request.session.user,
+				userId: socket.user.id,
 				name: 'New Conversation',
 				messages: []
 			});
@@ -19,25 +18,28 @@ class SessionHandler {
 
 	static async handleOpen(socket, sessionId) {
 		try {
-			const session = await Session.findById(sessionId);
+			const session = await Session.findOne({
+				_id: sessionId,
+				userId: socket.user.id
+			});
 			if (!session) throw new Error('Session not found');
 			socket.emit('chat:history', session.messages);
 		} catch (error) {
-			console.log('Error in handleOpen:', error);
+			console.error('Error in handleOpen:', error);
 			socket.emit('error', 'Failed to open session');
 		}
 	}
 
 	static async handleList(socket) {
 		try {
-			const sessions = await Session.find({ userId: socket.request.session.user })
+			const sessions = await Session.find({ userId: socket.user.id })
 				.sort({ updatedAt: -1 });
 			socket.emit('session:list', sessions.map(s => ({
 				id: s._id,
 				name: s.name
 			})));
 		} catch (error) {
-			console.log('Error in handleList:', error);
+			console.error('Error in handleList:', error);
 			socket.emit('error', 'Failed to list sessions');
 		}
 	}
@@ -45,7 +47,7 @@ class SessionHandler {
 	static async handleRename(socket, sessionId, newName) {
 		try {
 			await Session.updateOne(
-				{ _id: sessionId, userId: socket.request.session.user },
+				{ _id: sessionId, userId: socket.user.id },
 				{ name: newName }
 			);
 			await this.handleList(socket);
@@ -54,6 +56,7 @@ class SessionHandler {
 			socket.emit('error', 'Failed to rename session');
 		}
 	}
+	
 	static async handleRegenerateTitle(socket, sessionId) {
 		try {
 			const session = await Session.findOne({

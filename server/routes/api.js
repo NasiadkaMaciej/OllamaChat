@@ -5,6 +5,69 @@ const os = require('os');
 const AuthService = require('../services/AuthService');
 const ModelService = require('../services/ModelService');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+
+router.get('/auth/verify', (req, res) => {
+	const token = req.cookies.token;
+
+	if (!token) return res.json({ authenticated: false });
+
+	try {
+		const decoded = jwt.verify(token, config.JWT_SECRET);
+		res.json({
+			authenticated: true,
+			user: {
+				username: decoded.username,
+				_id: decoded.id
+			}
+		});
+	} catch (error) {
+		res.clearCookie('token');
+		res.json({ authenticated: false });
+	}
+});
+
+router.post('/auth/login', async (req, res) => {
+	try {
+		const { username, password } = req.body;
+		const user = await AuthService.login(username, password);
+		const token = jwt.sign(
+			{ id: user._id, username: user.username },
+			config.JWT_SECRET,
+			{ expiresIn: '7d' }
+		);
+
+		res.cookie('token', token, config.COOKIE_OPTIONS);
+
+		res.json({
+			success: true,
+			user: {
+				username: user.username,
+				_id: user._id
+			}
+		});
+	} catch (error) {
+		res.status(401).json({ error: error.message });
+	}
+});
+
+router.post('/auth/register', async (req, res) => {
+	try {
+		const { username, password } = req.body;
+		await AuthService.register(username, password);
+		res.json({
+			success: true,
+			message: 'Registration successful'
+		});
+	} catch (error) {
+		res.status(400).json({ success: false, error: error.message });
+	}
+});
+
+router.post('/auth/logout', (req, res) => {
+	res.clearCookie('token', config.COOKIE_OPTIONS);
+	res.json({ success: true });
+});
 
 router.get('/memory', async (req, res) => {
 	try {

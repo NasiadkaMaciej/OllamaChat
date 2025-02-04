@@ -28,14 +28,4 @@ export class SessionManager {
 		const query = document.getElementById('searchInput').value.trim();
 		this.socket.emit(query ? 'session:search' : 'session:load', query);
 	}
-
-	// After login, restore last opened session from cookie
-	restoreLastSession(sessions) {
-		const lastOpenedSession = getCookie('lastOpenedSession');
-		if (lastOpenedSession) {
-			const sessionExists = sessions.some(s => s.id === lastOpenedSession);
-			if (sessionExists) this.ui.openSession(lastOpenedSession);
-			else deleteCookie('lastOpenedSession');
-		}
-	}
 }

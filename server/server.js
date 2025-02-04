@@ -5,17 +5,21 @@ const config = require('./config/config');
 const { connectDatabase } = require('./utils/Database');
 const SocketManager = require('./socket/SocketManager');
 const apiRouter = require('./routes/api');
-const { initializeMiddleware } = require('./utils/middleware');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 async function startServer() {
 	const app = express();
 	const server = http.createServer(app);
-    const io = new Server(server, {
-        transports: ['websocket', 'polling'],
-        cookie: true
-    });
+	const io = new Server(server, {
+		transports: ['websocket', 'polling'],
+		cookie: true
+	});
 
-	initializeMiddleware(app, io);
+	app.use(bodyParser.json());
+	app.use(bodyParser.urlencoded({ extended: true }));
+	app.use(cookieParser());
+	app.set("trust proxy", true);
 
 	app.use('/api', apiRouter);
 

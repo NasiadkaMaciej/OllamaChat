@@ -1,16 +1,9 @@
 Control parameters 
-Styling
-curl http://localhost:11434/api/ps - get model names and size 
 KeepAlive from user? 
-https://github.com/open-webui/open-webui?tab=readme-ov-file
 Sessions in url?
 Messages edit 
 Display if response is generated 
-Highlight active session 
 Handle errors?
-Move code to new files 
 RWD 
-Add logout button 
-Sessions
 async generateSessionName?
 Cleanup

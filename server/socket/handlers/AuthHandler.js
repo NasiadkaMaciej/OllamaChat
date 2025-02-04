@@ -25,7 +25,14 @@ class AuthHandler {
 		}
 	}
 
-	// ToDo: Add logout
+	static async handleLogout(socket) {
+		try {
+			socket.disconnect();
+		} catch (error) {
+			console.error('Error in handleLogout:', error);
+			socket.emit('error', error.message);
+		}
+	}
 }
 
 module.exports = AuthHandler;

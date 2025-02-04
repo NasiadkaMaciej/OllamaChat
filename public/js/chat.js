@@ -22,10 +22,8 @@ export class Chat {
 		});
 
 		this.socket.on('chat:message', (message, done, sessionId) => {
-			if (sessionId === this.ui.currentSessionId) {
+			if (sessionId === this.ui.currentSessionId)
 				this.appendMessage('ai', message, done, true);
-				setCookie('lastOpenedSession', sessionId);
-			}
 		});
 
 		this.socket.on('chat:history', messages => {

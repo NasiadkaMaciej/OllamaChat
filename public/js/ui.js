@@ -12,6 +12,11 @@ export class UI {
 		document.getElementById('chat-container').style.display = 'flex';
 	}
 
+	showAuth() {
+		document.getElementById('auth-container').style.display = 'flex';
+		document.getElementById('chat-container').style.display = 'none';
+	}
+
 	showToast(message, error = true) {
 		const toast = document.createElement('div');
 		toast.className = `toast ${error ? 'error' : ''}`;
@@ -65,7 +70,6 @@ export class UI {
 	openSession(sessionId) {
 		window.app.chat.stopCurrentResponse()
 		this.currentSessionId = sessionId;
-		setCookie('lastOpenedSession', sessionId);
 		this.socket.emit('session:open', sessionId);
 		this.highlightActiveSession(sessionId);
 	}
@@ -85,7 +89,6 @@ export class UI {
 		this.currentSessionId = null;
 		this.outputContainer.innerHTML = '';
 		this.highlightActiveSession(null);
-		deleteCookie('lastOpenedSession');
 	}
 
 	createNewSession(callback) {
@@ -98,7 +101,6 @@ export class UI {
 				return;
 			}
 			this.currentSessionId = sessionId;
-			setCookie('lastOpenedSession', sessionId);
 			callback();
 		});
 	}

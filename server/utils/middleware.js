@@ -1,23 +1,18 @@
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const bodyParser = require('body-parser');
 const config = require('../config/config');
+const jwt = require('jsonwebtoken');
 
-const sessionMiddleware = session({
-	secret: config.SESSION_SECRET,
-	resave: false,
-	saveUninitialized: true,
-	store: MongoStore.create({ mongoUrl: config.MONGODB_URI })
-});
+const authMiddleware = (req, res, next) => {
+	const token = req.cookies.token;
 
-function initializeMiddleware(app, io) {
-	app.use(bodyParser.json());
-	app.use(sessionMiddleware);
-	app.set("trust proxy", true);
+	if (!token) return res.status(401).json({ error: 'No token provided' });
 
-	io.use((socket, next) => {
-		sessionMiddleware(socket.request, socket.request.res || {}, next);
-	});
-}
+	try {
+		req.user = jwt.verify(token, config.JWT_SECRET);
+		next();
+	} catch (error) {
+		res.clearCookie('token');
+		return res.status(401).json({ error: 'Invalid token' });
+	}
+};
 
-module.exports = { initializeMiddleware };
+module.exports = { authMiddleware };
