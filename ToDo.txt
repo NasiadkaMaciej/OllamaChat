@@ -8,3 +8,4 @@ RWD
 async generateSessionName?
 Cleanup
 Add option to resend verification email 
+Cookies info
