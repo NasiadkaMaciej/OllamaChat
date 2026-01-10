@@ -16,5 +16,10 @@ module.exports = {
 	},
 	ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'Maciej',
 	SESSION_NAME_MODEL: process.env.SESSION_NAME_MODEL || 'llama3.2:latest',
-	SENDGRID_API_KEY: process.env.SENDGRID_API_KEY
+	//SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
+	BREVO_HOST: process.env.BREVO_HOST || 'smtp-relay.brevo.com',
+	BREVO_PORT: process.env.BREVO_PORT || 587,
+	BREVO_USER: process.env.BREVO_USER,
+	BREVO_PASSWORD: process.env.BREVO_PASSWORD,
+	VERIFIED_SENDER: process.env.VERIFIED_SENDER,
 };

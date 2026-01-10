@@ -7,6 +7,7 @@ export class ModelManager {
 		this.currentModel = 'qwen2.5-coder:32b';
 		this.currentModelSize = 0;
 		this.refreshInterval = null;
+		this.isAuthenticated = true;
 		this.initializeModel();
 	}
 
@@ -15,17 +16,30 @@ export class ModelManager {
 	initializeModel() {
 		const lastSelectedModel = getCookie('lastSelectedModel');
 		if (lastSelectedModel) this.currentModel = lastSelectedModel;
-		this.startUpdates();
+		this.checkAuthAndStart();
 	}
 
-	startUpdates() { // Update memory and models info every 3 seconds
+	async checkAuthAndStart() {
+		try {
+			const response = await fetch('/api/auth/verify', { credentials: 'include' });
+			const data = await response.json();
+			this.isAuthenticated = !!data.authenticated;
+			if (this.isAuthenticated) this.startUpdates();
+		} catch (e) {
+			this.isAuthenticated = false;
+		}
+	}
+
+	startUpdates() {
 		this.updateSystemInfo();
-		this.refreshInterval = setInterval(() => this.updateSystemInfo(), 3000);
+		this.refreshInterval = setInterval(() => {
+			if (this.isAuthenticated) this.updateSystemInfo();
+		}, 10000);
 	}
-
 	cleanup() { if (this.refreshInterval) clearInterval(this.refreshInterval); }
 
 	async updateSystemInfo() {
+		if (!this.isAuthenticated) return;
 		try {
 			await this.updateMemoryInfo();
 			await this.updateModelsInfo();
@@ -35,6 +49,7 @@ export class ModelManager {
 	}
 
 	async updateMemoryInfo() {
+		if (!this.isAuthenticated) return;
 		const memoryResponse = await fetch('/api/memory');
 		const memoryData = await memoryResponse.json();
 		const usedPercentage = (memoryData.used / memoryData.total) * 100;
@@ -49,14 +64,14 @@ export class ModelManager {
 	}
 
 	async updateModelsInfo() {
+		if (!this.isAuthenticated) return;
 		const modelsResponse = await fetch('/api/models');
 		this.models = await modelsResponse.json();
-		this.models.sort((a, b) => { // Sort loaded models first, then alphabetically
+		this.models.sort((a, b) => {
 			if (a.isLoaded === b.isLoaded) return a.name.localeCompare(b.name);
 			return b.isLoaded - a.isLoaded;
 		});
 
-		// Set initial size for current model
 		const currentModelData = this.models.find(m => m.name === this.currentModel);
 		if (currentModelData) this.currentModelSize = currentModelData.size;
 

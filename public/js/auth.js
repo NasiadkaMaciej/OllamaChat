@@ -1,7 +1,7 @@
 export class Auth {
-	constructor(socket, ui) {
-		this.socket = socket;
+	constructor(ui, onAuthSuccess) {
 		this.ui = ui;
+		this.onAuthSuccess = onAuthSuccess;
 		this.bindEvents();
 		this.checkAuthState();
 	}
@@ -52,15 +52,11 @@ export class Auth {
 				body: JSON.stringify({ username, password }),
 				credentials: 'include'
 			});
-
 			const data = await response.json();
-
 			if (response.ok) {
 				setCookie('username', data.user.username);
 				this.ui.showChat();
-				if (!this.socket.connected) this.socket.connect();
-				await window.modelManager.initializeModel();
-				this.socket.emit('session:load');
+				if (typeof this.onAuthSuccess === 'function') this.onAuthSuccess();
 			} else this.ui.showToast(data.error || 'Login failed');
 		} catch (error) {
 			console.error('Login error:', error.message);
@@ -129,14 +125,14 @@ export class Auth {
 			const response = await fetch('/api/auth/verify', {
 				credentials: 'include'
 			});
-
 			const data = await response.json();
-
 			if (data.authenticated) {
 				setCookie('username', data.user.username);
 				this.ui.showChat();
-				this.socket.emit('session:load');
-			} else this.ui.showAuth();
+				if (typeof this.onAuthSuccess === 'function') this.onAuthSuccess();
+			} else {
+				this.ui.showAuth();
+			}
 		} catch (error) {
 			console.error('Auth check failed:', error.message);
 			this.ui.showAuth();

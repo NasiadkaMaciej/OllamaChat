@@ -89,7 +89,7 @@ class SessionHandler {
 				name: s.name
 			})));
 		} catch (error) {
-			console.error('Errpr in handleSearch:', error.message);
+			console.error('Error in handleSearch:', error.message);
 			socket.emit('error', 'Search failed');
 		}
 	}

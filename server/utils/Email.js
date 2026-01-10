@@ -1,12 +1,13 @@
 const nodemailer = require('nodemailer');
 const config = require('../config/config.js');
 
-let transporter = nodemailer.createTransport({
-	host: 'smtp.sendgrid.net',
-	port: 587,
+const transporter = nodemailer.createTransport({
+	host: config.BREVO_HOST,
+	port: config.BREVO_PORT,
+	secure: false, // true for 465, false for other ports
 	auth: {
-		user: "apikey",
-		pass: config.SENDGRID_API_KEY
+		user: config.BREVO_USER,
+		pass: config.BREVO_PASSWORD,
 	}
 });
 

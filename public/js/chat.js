@@ -33,6 +33,11 @@ export class Chat {
 		document.querySelector('.stopButton').addEventListener('click', () => {
 			this.stopCurrentResponse();
 		});
+
+		this.socket.on('error', () => {
+			this.responseInProgress = false;
+			this.isTyping = false;
+		});
 	}
 
 	// Type words from queue with delay
@@ -81,7 +86,6 @@ export class Chat {
 				this.typeNextWord();
 			}
 		} else this.currentMessageElement.textContent += message;
-		this.socket.emit('loadSessions');
 	}
 
 	handleSendMessage() {

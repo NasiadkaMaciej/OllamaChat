@@ -19,18 +19,21 @@ class ChatService {
 		}
 	}
 
-	static async generateSessionName(message) {
-		const modelName = config.SESSION_NAME_MODEL;
+	static async generateSessionName(message, modelName) {
+		const modelToUse = modelName || config.SESSION_NAME_MODEL;
 		try {
-			console.log("Generating session name");
-			const isLoaded = await ModelService.isModelLoaded(modelName);
+			console.log("Generating session name using:", modelToUse);
+			const isLoaded = await ModelService.isModelLoaded(modelToUse);
 			if (!isLoaded) throw new Error('Selected model is not loaded');
 
 			const response = await axios.post(`${config.OLLAMA_API_URL}/generate`, {
-				model: modelName,
+				model: modelToUse,
 				prompt: `Create a concise title for the AI conversation based on the topic below.
 						Most importantly, only include the title, absolutely nothing else.
-						Don't answer the question, just create a title for this message: ${message}`,
+						Limit your response to a maximum of 5 words.
+						Don't answer the question, do not even think about it.
+						You are only to provide a short title, nothing more.
+						Just create a title for this message: ${message}`,
 				stream: false
 			});
 			return response.data.response.trim().replace(/"/g, '').trim();
